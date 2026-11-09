@@ -1,31 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="is-dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Airline Voice Agent Demo</title>
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1691.0.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<script src="https://sdk.amazonaws.com/js/aws-sdk-2.1691.0.min.js"></script>
     <style>
         :root {
-            --dg-green: #13ef93;
-            --dg-green-light: #a1f9d4;
-            --dg-green-dark: #075433;
-            --dg-blue: #149afb;
-            --dg-bg-darkest: #0b0b0c;
-            --dg-bg-dark: #101014;
-            --dg-bg-medium: #1a1a1f;
-            --dg-bg-card: #232329;
-            --dg-bg-elevated: #2c2c33;
-            --dg-border: #2c2c33;
-            --dg-text-primary: #fbfbff;
-            --dg-text-secondary: #bbbbbf;
-            --dg-text-muted: #949498;
-            --dg-success: #12b76a;
-            --dg-error: #f04438;
+            --dg-green: var(--accent);
+            --dg-green-light: #e358fe;
+            --dg-green-dark: #242424;
+            --dg-blue: var(--accent);
+            --dg-bg-darkest: #0a0a0a;
+            --dg-bg-dark: #0a0a0a;
+            --dg-bg-medium: var(--surface-raised);
+            --dg-bg-card: var(--surface-default);
+            --dg-bg-elevated: var(--border-subtle);
+            --dg-border: var(--border-subtle);
+            --dg-text-primary: var(--text-primary);
+            --dg-text-secondary: var(--text-secondary);
+            --dg-text-muted: var(--text-tertiary);
+            --dg-success: var(--text-success);
+            --dg-error: var(--text-error);
             --dg-warning: #fec84b;
             --spacing-xs: 4px;
             --spacing-sm: 8px;
@@ -42,7 +38,7 @@
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            font-family: var(--font-sans);
             background: var(--dg-bg-dark);
             color: var(--dg-text-primary);
             line-height: 1.6;
@@ -52,12 +48,12 @@
         .container { max-width: 1200px; margin: 0 auto; padding: 0 var(--spacing-lg); }
         .header {
             background: var(--dg-bg-medium);
-            color: white;
+            color: var(--text-primary);
             padding: var(--spacing-md) 0;
             border-bottom: 1px solid var(--dg-border);
         }
         .header-content { display: flex; align-items: center; justify-content: center; }
-        .logo { font-size: 24px; font-weight: 600; color: white; text-decoration: none; }
+        .logo { font-size: 24px; font-weight: 600; color: var(--text-primary); text-decoration: none; }
         .aws-logo { display: flex; align-items: center; gap: var(--spacing-sm); }
         .main-content { padding: var(--spacing-xxl) 0; min-height: calc(100vh - 200px); }
         .hero-section { text-align: center; margin-bottom: var(--spacing-xxl); }
@@ -111,7 +107,7 @@
             font-size: 16px;
             font-weight: 500;
             border: none;
-            border-radius: var(--radius-sm);
+            border-radius: var(--radius-full);
             cursor: pointer;
             transition: all 0.2s ease;
             font-family: inherit;
@@ -120,22 +116,22 @@
         }
         .button-primary {
             background: var(--dg-green);
-            color: #101014;
+            color: var(--text-on-accent);
             border: 2px solid var(--dg-green);
             font-weight: 600;
         }
         .button-primary:hover:not(:disabled) {
             background: var(--dg-green-light);
             border-color: var(--dg-green-light);
-            box-shadow: 0 4px 16px rgba(19, 239, 147, 0.3);
+            box-shadow: none;
             transform: translateY(-1px);
         }
-        .button-primary:active:not(:disabled) { transform: translateY(0); box-shadow: 0 2px 8px rgba(19, 239, 147, 0.3); }
-        .button-danger { background: var(--dg-error); color: white; border: 2px solid var(--dg-error); }
+        .button-primary:active:not(:disabled) { transform: translateY(0); box-shadow: none; }
+        .button-danger { background: var(--dg-error); color: var(--text-on-accent); border: 2px solid var(--dg-error); }
         .button-danger:hover:not(:disabled) {
-            background: #d32f2f;
-            border-color: #d32f2f;
-            box-shadow: 0 4px 12px rgba(240, 68, 56, 0.3);
+            background: var(--status-error);
+            border-color: var(--status-error);
+            box-shadow: none;
             transform: translateY(-1px);
         }
         .button:disabled { background: var(--dg-bg-elevated); border-color: var(--dg-bg-elevated); color: var(--dg-text-muted); cursor: not-allowed; opacity: 0.6; transform: none; box-shadow: none; }
@@ -151,23 +147,23 @@
             color: var(--dg-green);
             transform: translateY(-1px);
         }
-        .button-accept { background: var(--dg-success); color: white; border: 2px solid var(--dg-success); }
+        .button-accept { background: var(--dg-success); color: var(--text-on-accent); border: 2px solid var(--dg-success); }
         .button-accept:hover:not(:disabled) {
-            background: #0e9a59;
-            border-color: #0e9a59;
-            box-shadow: 0 4px 12px rgba(18, 183, 106, 0.3);
+            background: var(--status-success);
+            border-color: var(--status-success);
+            box-shadow: none;
             transform: translateY(-1px);
         }
         .audio-controls { display: none; margin-top: var(--spacing-lg); padding-top: var(--spacing-lg); border-top: 1px solid var(--dg-border); }
         .audio-controls.active { display: block; }
         .status { margin-top: var(--spacing-lg); padding: var(--spacing-md) var(--spacing-lg); border-radius: var(--radius-sm); font-size: 14px; line-height: 1.6; }
-        .status-info { background: rgba(20, 154, 251, 0.1); color: var(--dg-blue); border-left: 4px solid var(--dg-blue); }
-        .status-success { background: rgba(18, 183, 106, 0.1); color: var(--dg-green); border-left: 4px solid var(--dg-green); }
-        .status-error { background: rgba(240, 68, 56, 0.1); color: var(--dg-error); border-left: 4px solid var(--dg-error); }
-        .status-details { margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid rgba(255,255,255,0.1); font-size: 12px; opacity: 0.85; font-family: 'Courier New', monospace; }
-        .loading { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: white; animation: spin 0.8s linear infinite; }
+        .status-info { background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--dg-blue); border-left: 4px solid var(--dg-blue); }
+        .status-success { background: color-mix(in srgb, var(--text-success) 10%, transparent); color: var(--text-success); border-left: 4px solid var(--text-success); }
+        .status-error { background: color-mix(in srgb, var(--text-error) 10%, transparent); color: var(--dg-error); border-left: 4px solid var(--dg-error); }
+        .status-details { margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid color-mix(in srgb, var(--text-primary) 10%, transparent); font-size: 12px; opacity: 0.85; font-family: var(--font-mono); }
+        .loading { display: inline-block; width: 16px; height: 16px; border: 2px solid color-mix(in srgb, var(--text-primary) 30%, transparent); border-radius: 50%; border-top-color: var(--text-primary); animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .footer { background: var(--dg-bg-darkest); color: white; padding: var(--spacing-xl) 0; margin-top: var(--spacing-xxl); border-top: 1px solid var(--dg-border); }
+        .footer { background: var(--dg-bg-darkest); color: var(--text-primary); padding: var(--spacing-xl) 0; margin-top: var(--spacing-xxl); border-top: 1px solid var(--dg-border); }
         .footer-content { text-align: center; }
         .footer-links { display: flex; justify-content: center; gap: var(--spacing-lg); flex-wrap: wrap; margin-bottom: var(--spacing-md); }
         .footer-links a { color: var(--dg-text-muted); text-decoration: none; transition: color 0.2s; font-size: 14px; }
@@ -185,17 +181,27 @@
             .card { padding: var(--spacing-md); }
         }
     </style>
+    <!-- deepgram-rebrand:start -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@100..900&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap" />
+    <link rel="stylesheet" href="./deepgram-brand.css" />
+    <meta name="theme-color" content="#fcfaf8" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="./favicon/favicon-2026.svg" type="image/svg+xml" />
+    <link rel="icon" href="./favicon/favicon-2026.ico" sizes="any" />
+    <link rel="icon" href="./favicon/favicon-2026-32x32.png" type="image/png" sizes="32x32" />
+    <link rel="icon" href="./favicon/favicon-2026-16x16.png" type="image/png" sizes="16x16" />
+    <link rel="apple-touch-icon" href="./favicon/apple-touch-icon-2026.png" />
+    <!-- deepgram-rebrand:end -->
 </head>
 <body>
     <header class="header">
         <div class="container">
             <div class="header-content">
                 <a href="#" aria-label="Home" style="display: flex; align-items: center; text-decoration: none;">
-                    <span class="aws-logo" style="margin-right: 16px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 1206" style="height: 28px; width: auto;">
-                            <path fill-rule="evenodd" clip-rule="evenodd" d="M229.019 864.667C257.384 893.481 272.639 931.568 272.041 971.898V971.848C270.794 1053.06 202.547 1119.11 119.943 1119.11H3.88843C1.69496 1119.11 0.59822 1116.47 2.14362 1114.87L58.6256 1058.09C59.5728 1057.14 60.8191 1056.6 62.1651 1056.6H121.04C168.399 1056.6 208.081 1018.71 209.477 972.197C210.175 948.468 201.451 926.035 184.9 908.985C168.349 891.936 146.165 882.564 122.486 882.564H62.5639V979.376C62.5639 980.223 61.9158 980.871 61.0683 980.871H1.49555C0.648072 980.871 0 980.223 0 979.376V821.495C0 820.648 0.648072 820 1.49555 820H122.486C162.816 820 200.653 835.853 229.019 864.667ZM399.114 900.211C326.131 900.211 292.83 956.144 292.83 1010.78L292.78 1010.83C292.78 1065.07 330.368 1122.25 403.351 1122.25C455.596 1122.25 496.175 1093.14 505.447 1047.67C505.647 1046.72 504.899 1045.83 503.952 1045.83H448.866C448.218 1045.83 447.669 1046.28 447.47 1046.92C442.435 1064.57 426.781 1073.59 403.351 1073.59C373.49 1073.59 354.297 1054.8 350.01 1024.49H503.154C503.952 1024.49 504.6 1023.94 504.65 1023.15C505.048 1018.56 505.397 1012.63 505.397 1005.25C505.397 956.144 472.096 900.211 399.114 900.211ZM399.114 943.731C427.728 943.731 444.379 962.924 446.074 986.853H350.857C355.992 956.942 372.244 943.731 399.114 943.731ZM531.419 1010.78C531.419 956.144 564.72 900.211 637.702 900.211C710.685 900.211 743.986 956.144 743.986 1005.25C743.986 1012.63 743.637 1018.56 743.238 1023.15C743.189 1023.94 742.541 1024.49 741.743 1024.49H588.599C592.886 1054.8 612.079 1073.59 641.94 1073.59C665.37 1073.59 681.024 1064.57 686.059 1046.92C686.258 1046.28 686.806 1045.83 687.454 1045.83H742.541C743.488 1045.83 744.236 1046.72 744.036 1047.67C734.764 1093.14 694.184 1122.25 641.94 1122.25C568.957 1122.25 531.369 1065.07 531.369 1010.83L531.419 1010.78ZM684.663 986.853C682.968 962.924 666.317 943.731 637.702 943.731C610.832 943.731 594.581 956.942 589.446 986.853H684.663ZM834.866 903.651H778.533V903.551C777.686 903.551 777.038 904.199 777.038 905.046V1204.31C777.038 1205.15 777.686 1205.8 778.533 1205.8H834.866C835.713 1205.8 836.361 1205.15 836.361 1204.31V1099.52C847.877 1114.02 868.815 1122.15 893.142 1122.15C955.058 1122.15 996.884 1078.18 996.884 1011.18C996.884 944.18 958.448 900.211 897.828 900.211C870.061 900.211 849.173 910.48 836.361 927.131V905.146C836.361 904.299 835.713 903.651 834.866 903.651ZM937.959 1011.23C937.959 1047.07 917.071 1071 885.465 1071C853.909 1071 832.971 1047.47 832.971 1011.23C832.971 974.988 853.909 951.059 885.465 951.059C917.021 951.059 937.959 975.387 937.959 1011.23ZM1083.63 1160.79C1084.57 1159.84 1085.82 1159.34 1087.17 1159.34H1147.69C1166.03 1159.34 1178.84 1144.83 1178.84 1125.19V1097.03C1167.73 1112.83 1145.09 1122.2 1119.92 1122.2C1056.31 1122.2 1018.32 1078.23 1018.32 1011.23C1018.32 944.231 1056.31 900.262 1119.07 900.262C1145.54 900.262 1166.43 910.083 1178.84 925.038V905.197C1178.84 904.35 1179.49 903.702 1180.34 903.702H1236.67C1237.52 903.702 1238.17 904.35 1238.17 905.197V1131.67C1238.17 1176.09 1206.16 1205.95 1157.51 1205.95H1044.69C1042.45 1205.95 1041.35 1203.26 1042.95 1201.72L1083.63 1160.89V1160.79ZM1129.34 1070.95C1161.79 1070.95 1182.28 1047.47 1182.28 1011.18C1182.28 974.89 1161.79 951.011 1129.34 951.011C1096.89 951.011 1076.85 974.94 1076.85 1011.18C1076.85 1047.42 1097.78 1070.95 1129.34 1070.95ZM1341.21 1117.27V1014.17H1341.26C1341.26 977.431 1354.47 953.104 1383.93 953.104H1417.88C1418.73 953.104 1419.38 952.456 1419.38 951.608V905.097C1419.38 904.249 1418.73 903.601 1417.88 903.601H1395.45C1368.98 903.601 1352.73 912.525 1341.21 939.444V905.097C1341.21 904.249 1340.56 903.601 1339.71 903.601H1283.38C1282.53 903.601 1281.89 904.249 1281.89 905.097V1117.27C1281.89 1118.11 1282.53 1118.76 1283.38 1118.76H1339.71C1340.56 1118.76 1341.21 1118.11 1341.21 1117.27ZM1438.37 1057.74C1438.37 1015.47 1469.98 989.845 1517.34 989.845H1553.18C1563.85 989.845 1569.38 983.015 1569.38 974.042C1569.38 956.096 1555.72 943.732 1531.4 943.732C1507.07 943.732 1492.41 959.136 1491.31 976.485C1491.31 977.282 1490.67 977.881 1489.87 977.881H1439.97C1439.07 977.881 1438.37 977.133 1438.42 976.236C1441.36 933.862 1476.21 900.162 1534.39 900.162C1589.02 900.162 1628.71 931.768 1628.71 980.423V1117.22C1628.71 1118.06 1628.06 1118.71 1627.21 1118.71H1570.88C1570.03 1118.71 1569.38 1118.06 1569.38 1117.22V1088.85C1562.1 1108.89 1538.22 1122.15 1508.76 1122.15C1467.34 1122.15 1438.32 1094.38 1438.32 1057.69L1438.37 1057.74ZM1524.17 1079.08C1552.78 1079.08 1569.43 1057.74 1569.43 1030.42V1027.43H1526.31C1507.96 1027.43 1495.55 1038.55 1495.55 1055.2C1495.55 1069.31 1507.52 1079.13 1524.17 1079.13V1079.08ZM1722.73 903.651H1666.39L1666.49 903.601C1665.64 903.601 1665 904.249 1665 905.096V1117.27C1665 1118.11 1665.64 1118.76 1666.49 1118.76H1722.82C1723.67 1118.76 1724.32 1118.11 1724.32 1117.27V996.674C1724.32 968.906 1740.07 950.561 1764.85 950.561C1787.88 950.561 1802.84 968.906 1802.84 996.674V1117.27C1802.84 1118.11 1803.48 1118.76 1804.33 1118.76H1860.66C1861.51 1118.76 1862.16 1118.11 1862.16 1117.27V996.674C1862.16 968.906 1877.91 950.561 1902.69 950.561C1925.72 950.561 1940.68 968.906 1940.68 996.674V1117.27C1940.68 1118.11 1941.32 1118.76 1942.17 1118.76H1998.5C1999.35 1118.76 2000 1118.11 2000 1117.27V977.88C2000 934.808 1969.69 900.211 1923.18 900.211C1888.63 900.211 1861.71 918.556 1851.04 939.494C1840.77 913.87 1818.99 900.211 1785.29 900.211C1756.23 900.211 1735.74 914.319 1724.22 933.96V905.146C1724.22 904.299 1723.57 903.651 1722.73 903.651Z" fill="white"/>
-                            <path d="M1003.21 656.667H738.295C729.426 656.667 724.992 645.959 731.22 639.683L901.866 468.009C903.759 466.116 906.3 465.07 908.941 465.07H1005.25C1079.69 465.07 1142.66 406.849 1144.91 332.492C1147.2 255.196 1084.97 191.646 1008.19 191.646H905.005V318.765C905.005 324.244 900.521 328.726 895.04 328.726H723.298C717.817 328.726 713.333 324.244 713.333 318.765V9.96081C713.333 4.48237 717.817 0 723.298 0H1008.19C1190.99 0 1339.42 150.06 1336.63 333.438C1333.89 513.58 1183.47 656.667 1003.21 656.667Z" fill="white"/>
-                        </svg>
+                    <span class="aws-logo" style="margin-right: 16px; color: var(--text-primary);">
+                        <svg aria-label="Deepgram" role="img" style="height: 22px; width: auto; display: block;" viewBox="0 0 125.645 24.0002" xmlns="http://www.w3.org/2000/svg"><path d="M3.79702 12.263V7.25218C3.79702 3.77038 3.16453 2.5054 0 1.8463L0.579276 0C3.00486 0.528099 4.13886 0.528099 5.27284 0.528099C6.196 0.528099 7.11919 0.421661 8.01569 0.317269C8.91225 0.21083 9.80881 0.106438 10.7586 0.106438C16.2177 0.106438 20.3586 4.16748 20.3586 9.7596C20.3586 15.3517 16.2177 19.4128 10.7586 19.4128C9.80881 19.4128 8.91225 19.3064 8.01569 19.2019C7.11919 19.0955 6.196 18.9911 5.27284 18.9911C4.13886 18.9911 3.00486 18.9911 0.579276 19.5192L0 17.6729C3.16453 17.0138 3.79702 15.7468 3.79702 12.267V12.263ZM16.5636 9.75755C16.5636 5.0108 14.4267 2.18813 10.7606 2.18813C8.49264 2.18813 7.068 3.42855 7.068 7.25218V12.263C7.068 16.0866 8.49264 17.327 10.7606 17.327C14.4267 17.327 16.5636 14.5043 16.5636 9.75755Z" fill="currentColor"></path><path d="M21.7279 12.3429C21.7279 7.67397 24.391 4.90654 28.2166 4.90654C31.5388 4.90654 34.0442 7.1745 34.2305 10.947H24.6448C24.8167 13.874 26.53 16.0375 29.3527 16.0375C30.9349 16.0375 32.4374 15.4317 33.2561 13.7164H34.1527C33.467 17.4888 31.33 19.4129 28.1654 19.4129C24.3418 19.4129 21.73 16.5391 21.73 12.345L21.7279 12.3429ZM27.5555 6.67304C26.053 6.67304 25.0234 7.64324 24.7205 9.33603H30.372C30.0629 7.59616 29.0068 6.67304 27.5576 6.67304H27.5555Z" fill="currentColor"></path><path d="M35.3584 12.3429C35.3584 7.67397 38.0215 4.90654 41.8472 4.90654C45.1693 4.90654 47.6747 7.1745 47.861 10.947H38.2753C38.4472 13.874 40.1605 16.0375 42.9832 16.0375C44.5655 16.0375 46.0679 15.4317 46.8867 13.7164H47.7832C47.0975 17.4888 44.9605 19.4129 41.796 19.4129C37.9724 19.4129 35.3605 16.5391 35.3605 12.345L35.3584 12.3429ZM41.188 6.67304C39.6856 6.67304 38.656 7.64324 38.3531 9.33603H44.0046C43.6955 7.59616 42.6393 6.67304 41.1901 6.67304H41.188Z" fill="currentColor"></path><path d="M53.6066 16.4449V20.4405C53.6066 21.0197 53.8175 21.2326 54.847 21.4168L56.2983 21.6809V23.5804H48.7554V21.6809L49.6254 21.4168C50.2845 21.206 50.4953 21.0483 50.4953 20.467V9.28483C50.4953 8.78338 50.2845 8.59914 49.6254 8.4149L48.5446 8.12424V6.75285L52.6589 4.93315H53.6087V7.87457C54.5584 5.93613 56.3515 4.90654 58.5397 4.90654C62.0481 4.90654 64.6845 7.99119 64.6845 12.1587C64.6845 16.3262 62.0481 19.4109 58.5397 19.4109C56.3515 19.4109 54.5563 18.3813 53.6087 16.4428L53.6066 16.4449ZM57.6145 16.9054C59.8559 16.9054 61.6223 15.0325 61.6223 12.1587C61.6223 9.28483 59.8559 7.41192 57.6145 7.41192C55.3731 7.41192 53.6066 9.28483 53.6066 12.1587C53.6066 15.0325 55.3731 16.9054 57.6145 16.9054Z" fill="currentColor"></path><path d="M66.5683 22.2601L67.6101 19.8858H68.1382C69.0998 20.8212 70.5902 21.3615 72.371 21.3759C75.3044 21.3636 76.8538 19.9328 76.8681 17.149C75.8468 18.586 74.2376 19.4109 72.3585 19.4109C68.6128 19.4109 66.0029 16.3241 66.0029 12.1587C66.0029 7.99325 68.6147 4.90654 72.3585 4.90654C74.3359 4.90654 75.9718 5.77648 77.0012 7.41192L78.1084 5.3282H79.9812V16.9587C79.9812 21.3554 77.2649 24 72.3728 24C70.0397 24 67.9684 23.3675 66.5701 22.2601H66.5683ZM72.9625 16.9321C75.0997 16.9321 76.8662 15.0591 76.8662 12.1587C76.8662 9.25828 75.0997 7.41192 72.9625 7.41192C70.8259 7.41192 69.0594 9.28484 69.0594 12.1587C69.0594 15.0325 70.8259 16.9321 72.9625 16.9321Z" fill="currentColor"></path><path d="M82.1073 5.32801H87.2245V7.83343H87.9902C88.1743 6.11811 89.0439 5.32801 90.6798 5.32801H92.7635V8.12409H90.7861C88.1743 8.12409 87.5953 9.1782 87.5953 11.8699V16.4058H90.8129V18.991H82.1091V16.4058H84.484V7.91323H82.1091V5.32801H82.1073Z" fill="currentColor"></path><path d="M93.6063 15.1656C93.6063 12.5026 95.4792 10.9203 98.5643 10.9203H102.123V9.70649C102.123 8.12424 101.227 7.22775 99.6715 7.22775C97.956 7.22775 97.0597 8.07106 96.9819 9.70649H94.1083C94.2146 6.77947 96.4557 4.90654 99.8842 4.90654C103.313 4.90654 105.239 6.6996 105.239 9.86411V18.9892H102.68V16.9321H101.915C101.36 18.6003 100.042 19.4109 98.1955 19.4109C95.4792 19.4109 93.6063 17.671 93.6063 15.1656ZM99.0389 17.1429C100.992 17.1429 102.126 15.7981 102.126 13.5833V13.0819H98.5127C97.4055 13.0819 96.6933 13.874 96.6933 15.0325C96.6933 16.3241 97.5896 17.1429 99.0408 17.1429H99.0389Z" fill="currentColor"></path><path d="M107.816 5.3282H110.375V7.46516H111.167C111.668 5.8563 112.856 4.90654 114.727 4.90654C116.151 4.90654 117.443 5.51243 117.865 7.46516H118.55C119.052 5.8563 120.239 4.90654 122.11 4.90654C123.98 4.90654 125.645 5.77648 125.645 9.02079V18.9892H122.534V9.75768C122.534 8.20205 121.874 7.70053 120.767 7.70053C119.132 7.70053 118.288 8.78132 118.288 10.4434V18.9892H115.177V9.75768C115.177 8.20205 114.518 7.70053 113.411 7.70053C111.775 7.70053 110.932 8.78132 110.932 10.4434V18.9892H107.821V5.3282H107.816Z" fill="currentColor"></path></svg>
                     </span>
                     <span class="logo">Airline Voice Agent Demo</span>
                 </a>
