@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Airline Voice Agent Demo</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1691.0.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --dg-green: #13ef93;
+            --dg-green-light: #a1f9d4;
+            --dg-green-dark: #075433;
+            --dg-blue: #149afb;
+            --dg-bg-darkest: #0b0b0c;
+            --dg-bg-dark: #101014;
+            --dg-bg-medium: #1a1a1f;
+            --dg-bg-card: #232329;
+            --dg-bg-elevated: #2c2c33;
+            --dg-border: #2c2c33;
+            --dg-text-primary: #fbfbff;
+            --dg-text-secondary: #bbbbbf;
+            --dg-text-muted: #949498;
+            --dg-success: #12b76a;
+            --dg-error: #f04438;
+            --dg-warning: #fec84b;
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            --spacing-xxl: 48px;
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+            --shadow-md: 0 2px 12px rgba(0, 0, 0, 0.5);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            background: var(--dg-bg-dark);
+            color: var(--dg-text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 var(--spacing-lg); }
+        .header {
+            background: var(--dg-bg-medium);
+            color: white;
+            padding: var(--spacing-md) 0;
+            border-bottom: 1px solid var(--dg-border);
+        }
+        .header-content { display: flex; align-items: center; justify-content: center; }
+        .logo { font-size: 24px; font-weight: 600; color: white; text-decoration: none; }
+        .aws-logo { display: flex; align-items: center; gap: var(--spacing-sm); }
+        .main-content { padding: var(--spacing-xxl) 0; min-height: calc(100vh - 200px); }
+        .hero-section { text-align: center; margin-bottom: var(--spacing-xxl); }
+        .hero-title {
+            font-size: 48px;
+            font-weight: 500;
+            color: var(--dg-text-primary);
+            margin-bottom: var(--spacing-md);
+            line-height: 1.2;
+        }
+        .hero-subtitle {
+            font-size: 20px;
+            color: var(--dg-text-secondary);
+            margin-bottom: var(--spacing-xl);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .card {
+            background: var(--dg-bg-card);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            padding: var(--spacing-xl);
+            margin: 0 auto;
+            max-width: 600px;
+            border: 1px solid var(--dg-border);
+        }
+        .info-box {
+            background: var(--dg-bg-medium);
+            border-left: 4px solid var(--dg-green);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+            border-radius: var(--radius-sm);
+        }
+        .info-box h3 { color: var(--dg-text-primary); font-size: 18px; font-weight: 500; margin-bottom: var(--spacing-md); }
+        .info-box ul { list-style: none; padding: 0; }
+        .info-box li {
+            color: var(--dg-text-secondary);
+            font-size: 14px;
+            line-height: 1.6;
+            margin: var(--spacing-sm) 0;
+        }
+        .info-box li::before { content: ''; }
+        .info-box .highlight { color: var(--dg-green); font-weight: 500; }
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            padding: 14px 24px;
+            font-size: 16px;
+            font-weight: 500;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            text-decoration: none;
+            min-width: 140px;
+        }
+        .button-primary {
+            background: var(--dg-green);
+            color: #101014;
+            border: 2px solid var(--dg-green);
+            font-weight: 600;
+        }
+        .button-primary:hover:not(:disabled) {
+            background: var(--dg-green-light);
+            border-color: var(--dg-green-light);
+            box-shadow: 0 4px 16px rgba(19, 239, 147, 0.3);
+            transform: translateY(-1px);
+        }
+        .button-primary:active:not(:disabled) { transform: translateY(0); box-shadow: 0 2px 8px rgba(19, 239, 147, 0.3); }
+        .button-danger { background: var(--dg-error); color: white; border: 2px solid var(--dg-error); }
+        .button-danger:hover:not(:disabled) {
+            background: #d32f2f;
+            border-color: #d32f2f;
+            box-shadow: 0 4px 12px rgba(240, 68, 56, 0.3);
+            transform: translateY(-1px);
+        }
+        .button:disabled { background: var(--dg-bg-elevated); border-color: var(--dg-bg-elevated); color: var(--dg-text-muted); cursor: not-allowed; opacity: 0.6; transform: none; box-shadow: none; }
+        .button-secondary {
+            background: var(--dg-bg-elevated);
+            color: var(--dg-text-primary);
+            border: 2px solid var(--dg-border);
+            margin-top: var(--spacing-md);
+        }
+        .button-secondary:hover:not(:disabled) {
+            background: var(--dg-bg-medium);
+            border-color: var(--dg-green);
+            color: var(--dg-green);
+            transform: translateY(-1px);
+        }
+        .button-accept { background: var(--dg-success); color: white; border: 2px solid var(--dg-success); }
+        .button-accept:hover:not(:disabled) {
+            background: #0e9a59;
+            border-color: #0e9a59;
+            box-shadow: 0 4px 12px rgba(18, 183, 106, 0.3);
+            transform: translateY(-1px);
+        }
+        .audio-controls { display: none; margin-top: var(--spacing-lg); padding-top: var(--spacing-lg); border-top: 1px solid var(--dg-border); }
+        .audio-controls.active { display: block; }
+        .status { margin-top: var(--spacing-lg); padding: var(--spacing-md) var(--spacing-lg); border-radius: var(--radius-sm); font-size: 14px; line-height: 1.6; }
+        .status-info { background: rgba(20, 154, 251, 0.1); color: var(--dg-blue); border-left: 4px solid var(--dg-blue); }
+        .status-success { background: rgba(18, 183, 106, 0.1); color: var(--dg-green); border-left: 4px solid var(--dg-green); }
+        .status-error { background: rgba(240, 68, 56, 0.1); color: var(--dg-error); border-left: 4px solid var(--dg-error); }
+        .status-details { margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid rgba(255,255,255,0.1); font-size: 12px; opacity: 0.85; font-family: 'Courier New', monospace; }
+        .loading { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: white; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .footer { background: var(--dg-bg-darkest); color: white; padding: var(--spacing-xl) 0; margin-top: var(--spacing-xxl); border-top: 1px solid var(--dg-border); }
+        .footer-content { text-align: center; }
+        .footer-links { display: flex; justify-content: center; gap: var(--spacing-lg); flex-wrap: wrap; margin-bottom: var(--spacing-md); }
+        .footer-links a { color: var(--dg-text-muted); text-decoration: none; transition: color 0.2s; font-size: 14px; }
+        .footer-links a:hover { color: var(--dg-green); }
+        .footer-copyright { font-size: 13px; color: var(--dg-text-muted); }
+        @media (max-width: 768px) {
+            .hero-title { font-size: 36px; }
+            .hero-subtitle { font-size: 18px; }
+            .card { padding: var(--spacing-lg); margin: 0 var(--spacing-md); }
+            .footer-links { flex-direction: column; gap: var(--spacing-md); }
+        }
+        @media (max-width: 480px) {
+            .hero-title { font-size: 28px; }
+            .container { padding: 0 var(--spacing-md); }
+            .card { padding: var(--spacing-md); }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="#" aria-label="Home" style="display: flex; align-items: center; text-decoration: none;">
+                    <span class="aws-logo" style="margin-right: 16px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 1206" style="height: 28px; width: auto;">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M229.019 864.667C257.384 893.481 272.639 931.568 272.041 971.898V971.848C270.794 1053.06 202.547 1119.11 119.943 1119.11H3.88843C1.69496 1119.11 0.59822 1116.47 2.14362 1114.87L58.6256 1058.09C59.5728 1057.14 60.8191 1056.6 62.1651 1056.6H121.04C168.399 1056.6 208.081 1018.71 209.477 972.197C210.175 948.468 201.451 926.035 184.9 908.985C168.349 891.936 146.165 882.564 122.486 882.564H62.5639V979.376C62.5639 980.223 61.9158 980.871 61.0683 980.871H1.49555C0.648072 980.871 0 980.223 0 979.376V821.495C0 820.648 0.648072 820 1.49555 820H122.486C162.816 820 200.653 835.853 229.019 864.667ZM399.114 900.211C326.131 900.211 292.83 956.144 292.83 1010.78L292.78 1010.83C292.78 1065.07 330.368 1122.25 403.351 1122.25C455.596 1122.25 496.175 1093.14 505.447 1047.67C505.647 1046.72 504.899 1045.83 503.952 1045.83H448.866C448.218 1045.83 447.669 1046.28 447.47 1046.92C442.435 1064.57 426.781 1073.59 403.351 1073.59C373.49 1073.59 354.297 1054.8 350.01 1024.49H503.154C503.952 1024.49 504.6 1023.94 504.65 1023.15C505.048 1018.56 505.397 1012.63 505.397 1005.25C505.397 956.144 472.096 900.211 399.114 900.211ZM399.114 943.731C427.728 943.731 444.379 962.924 446.074 986.853H350.857C355.992 956.942 372.244 943.731 399.114 943.731ZM531.419 1010.78C531.419 956.144 564.72 900.211 637.702 900.211C710.685 900.211 743.986 956.144 743.986 1005.25C743.986 1012.63 743.637 1018.56 743.238 1023.15C743.189 1023.94 742.541 1024.49 741.743 1024.49H588.599C592.886 1054.8 612.079 1073.59 641.94 1073.59C665.37 1073.59 681.024 1064.57 686.059 1046.92C686.258 1046.28 686.806 1045.83 687.454 1045.83H742.541C743.488 1045.83 744.236 1046.72 744.036 1047.67C734.764 1093.14 694.184 1122.25 641.94 1122.25C568.957 1122.25 531.369 1065.07 531.369 1010.83L531.419 1010.78ZM684.663 986.853C682.968 962.924 666.317 943.731 637.702 943.731C610.832 943.731 594.581 956.942 589.446 986.853H684.663ZM834.866 903.651H778.533V903.551C777.686 903.551 777.038 904.199 777.038 905.046V1204.31C777.038 1205.15 777.686 1205.8 778.533 1205.8H834.866C835.713 1205.8 836.361 1205.15 836.361 1204.31V1099.52C847.877 1114.02 868.815 1122.15 893.142 1122.15C955.058 1122.15 996.884 1078.18 996.884 1011.18C996.884 944.18 958.448 900.211 897.828 900.211C870.061 900.211 849.173 910.48 836.361 927.131V905.146C836.361 904.299 835.713 903.651 834.866 903.651ZM937.959 1011.23C937.959 1047.07 917.071 1071 885.465 1071C853.909 1071 832.971 1047.47 832.971 1011.23C832.971 974.988 853.909 951.059 885.465 951.059C917.021 951.059 937.959 975.387 937.959 1011.23ZM1083.63 1160.79C1084.57 1159.84 1085.82 1159.34 1087.17 1159.34H1147.69C1166.03 1159.34 1178.84 1144.83 1178.84 1125.19V1097.03C1167.73 1112.83 1145.09 1122.2 1119.92 1122.2C1056.31 1122.2 1018.32 1078.23 1018.32 1011.23C1018.32 944.231 1056.31 900.262 1119.07 900.262C1145.54 900.262 1166.43 910.083 1178.84 925.038V905.197C1178.84 904.35 1179.49 903.702 1180.34 903.702H1236.67C1237.52 903.702 1238.17 904.35 1238.17 905.197V1131.67C1238.17 1176.09 1206.16 1205.95 1157.51 1205.95H1044.69C1042.45 1205.95 1041.35 1203.26 1042.95 1201.72L1083.63 1160.89V1160.79ZM1129.34 1070.95C1161.79 1070.95 1182.28 1047.47 1182.28 1011.18C1182.28 974.89 1161.79 951.011 1129.34 951.011C1096.89 951.011 1076.85 974.94 1076.85 1011.18C1076.85 1047.42 1097.78 1070.95 1129.34 1070.95ZM1341.21 1117.27V1014.17H1341.26C1341.26 977.431 1354.47 953.104 1383.93 953.104H1417.88C1418.73 953.104 1419.38 952.456 1419.38 951.608V905.097C1419.38 904.249 1418.73 903.601 1417.88 903.601H1395.45C1368.98 903.601 1352.73 912.525 1341.21 939.444V905.097C1341.21 904.249 1340.56 903.601 1339.71 903.601H1283.38C1282.53 903.601 1281.89 904.249 1281.89 905.097V1117.27C1281.89 1118.11 1282.53 1118.76 1283.38 1118.76H1339.71C1340.56 1118.76 1341.21 1118.11 1341.21 1117.27ZM1438.37 1057.74C1438.37 1015.47 1469.98 989.845 1517.34 989.845H1553.18C1563.85 989.845 1569.38 983.015 1569.38 974.042C1569.38 956.096 1555.72 943.732 1531.4 943.732C1507.07 943.732 1492.41 959.136 1491.31 976.485C1491.31 977.282 1490.67 977.881 1489.87 977.881H1439.97C1439.07 977.881 1438.37 977.133 1438.42 976.236C1441.36 933.862 1476.21 900.162 1534.39 900.162C1589.02 900.162 1628.71 931.768 1628.71 980.423V1117.22C1628.71 1118.06 1628.06 1118.71 1627.21 1118.71H1570.88C1570.03 1118.71 1569.38 1118.06 1569.38 1117.22V1088.85C1562.1 1108.89 1538.22 1122.15 1508.76 1122.15C1467.34 1122.15 1438.32 1094.38 1438.32 1057.69L1438.37 1057.74ZM1524.17 1079.08C1552.78 1079.08 1569.43 1057.74 1569.43 1030.42V1027.43H1526.31C1507.96 1027.43 1495.55 1038.55 1495.55 1055.2C1495.55 1069.31 1507.52 1079.13 1524.17 1079.13V1079.08ZM1722.73 903.651H1666.39L1666.49 903.601C1665.64 903.601 1665 904.249 1665 905.096V1117.27C1665 1118.11 1665.64 1118.76 1666.49 1118.76H1722.82C1723.67 1118.76 1724.32 1118.11 1724.32 1117.27V996.674C1724.32 968.906 1740.07 950.561 1764.85 950.561C1787.88 950.561 1802.84 968.906 1802.84 996.674V1117.27C1802.84 1118.11 1803.48 1118.76 1804.33 1118.76H1860.66C1861.51 1118.76 1862.16 1118.11 1862.16 1117.27V996.674C1862.16 968.906 1877.91 950.561 1902.69 950.561C1925.72 950.561 1940.68 968.906 1940.68 996.674V1117.27C1940.68 1118.11 1941.32 1118.76 1942.17 1118.76H1998.5C1999.35 1118.76 2000 1118.11 2000 1117.27V977.88C2000 934.808 1969.69 900.211 1923.18 900.211C1888.63 900.211 1861.71 918.556 1851.04 939.494C1840.77 913.87 1818.99 900.211 1785.29 900.211C1756.23 900.211 1735.74 914.319 1724.22 933.96V905.146C1724.22 904.299 1723.57 903.651 1722.73 903.651Z" fill="white"/>
+                            <path d="M1003.21 656.667H738.295C729.426 656.667 724.992 645.959 731.22 639.683L901.866 468.009C903.759 466.116 906.3 465.07 908.941 465.07H1005.25C1079.69 465.07 1142.66 406.849 1144.91 332.492C1147.2 255.196 1084.97 191.646 1008.19 191.646H905.005V318.765C905.005 324.244 900.521 328.726 895.04 328.726H723.298C717.817 328.726 713.333 324.244 713.333 318.765V9.96081C713.333 4.48237 717.817 0 723.298 0H1008.19C1190.99 0 1339.42 150.06 1336.63 333.438C1333.89 513.58 1183.47 656.667 1003.21 656.667Z" fill="white"/>
+                        </svg>
+                    </span>
+                    <span class="logo">Airline Voice Agent Demo</span>
+                </a>
+            </div>
+        </div>
+    </header>
+    
+    <main class="main-content">
+        <div class="container">
+            <section class="hero-section">
+                <h1 class="hero-title">Airline Voice Agent Demo</h1>
+                <p class="hero-subtitle">Experience browser-based calling powered by Deepgram and Amazon Connect</p>
+            </section>
+            
+            <div class="card">
+                <div class="info-box">
+                    <h3>How It Works</h3>
+                    <ul>
+                        <li>Click <span class="highlight">Start Call</span> to connect to an agent powered by <span class="highlight">Deepgram STT/TTS</span> and <span class="highlight">Connect AI Agent</span> to understand and respond in real time.</li>
+                    </ul>
+                    <h3 style="margin-top: var(--spacing-md);">Demo Scenarios</h3>
+                    <ul>
+                        <li><span style="color: var(--dg-green); font-weight: bold; margin-right: 6px;">1.</span>Call as Lisa Chen. Booking 847291. Ask about your flight to Tokyo and request a seat change to 15A if it&#x27;s free or any other air travel related questions.</li>
+                        <li><span style="color: var(--dg-green); font-weight: bold; margin-right: 6px;">2.</span>Call as Carlos Martinez. Booking 531068. Ask about upgrading to first class for your next flight or any other travel related questions.</li>
+                    </ul>
+                </div>
+                
+                <button id="callButton" class="button button-primary" onclick="toggleCall()" disabled>
+                    <span>Initializing...</span>
+                </button>
+                
+                <div id="audioControls" class="audio-controls">
+                    <button id="muteButton" class="button button-secondary" onclick="toggleMute()">
+                        &#x1F507; Mute Microphone
+                    </button>
+                </div>
+                
+                <div id="statusMessage"></div>
+
+            </div>
+        </div>
+    </main>
+    
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <a href="https://aws.amazon.com/connect/">Amazon Connect</a>
+                    <a href="https://deepgram.com/">Deepgram</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <audio id="remoteAudio"></audio>
+    
+    <script type="module">
+        try {
+            const ChimeSDKModule = await import('https://esm.sh/amazon-chime-sdk-js@3.22.0');
+            window.ChimeSDK = ChimeSDKModule;
+            console.log('[OK] Chime SDK loaded');
+            window.dispatchEvent(new CustomEvent('chimesdkloaded'));
+        } catch (error) {
+            console.error('[ERROR] Failed to load Chime SDK:', error);
+            window.dispatchEvent(new CustomEvent('chimesdkerror', { detail: { error: error.message } }));
+        }
+    </script>
+    
+    <script>
+        const CONFIG = {
+            API_ENDPOINT: 'https://hyisaymjee.execute-api.us-west-2.amazonaws.com',
+            REGION: 'us-west-2',
+            COGNITO_IDENTITY_POOL_ID: 'us-west-2:65bbb454-2912-47ca-8559-95281d88a669',
+            MAX_DURATION: 10
+        };
+        
+        let sessionId = generateSessionId();
+        let meetingSession = null;
+        let isCallActive = false;
+        let isMuted = false;
+        let chimeSDKReady = false;
+        let awsCredentials = null;
+        
+        console.log('[INIT] AI Voice Agent Demo initializing...');
+        
+        window.addEventListener('chimesdkloaded', () => {
+            chimeSDKReady = true;
+            console.log('[OK] Chime SDK ready');
+            initializeAWSCredentials();
+        });
+        
+        window.addEventListener('chimesdkerror', (e) => {
+            console.error('[ERROR] Chime SDK error:', e.detail.error);
+            showStatus('Failed to load audio SDK. Please refresh the page.', 'error');
+        });
+        
+        async function initializeAWSCredentials() {
+            try {
+                console.log('Initializing AWS credentials...');
+                showStatus('Obtaining credentials...', 'info');
+                
+                AWS.config.region = CONFIG.REGION;
+                AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+                    IdentityPoolId: CONFIG.COGNITO_IDENTITY_POOL_ID
+                });
+                
+                await AWS.config.credentials.getPromise();
+                awsCredentials = AWS.config.credentials;
+                
+                console.log('[OK] Credentials obtained');
+                
+                const callButton = document.getElementById('callButton');
+                callButton.disabled = false;
+                callButton.innerHTML = '<span>&#x1F4DE; Start Call</span>';
+
+                showStatus('&#x2705; Ready to call', 'success');
+                
+            } catch (error) {
+                console.error('[ERROR] Failed to initialize credentials:', error);
+                showStatus('Failed to initialize. Please refresh the page.', 'error');
+            }
+        }
+        
+        function generateSessionId() {
+            return 'session-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        }
+        
+        async function toggleCall() {
+            if (isCallActive) {
+                await hangupCall();
+            } else {
+                await startCall();
+            }
+        }
+        
+        async function startCall() {
+            const callButton = document.getElementById('callButton');
+            
+            if (!chimeSDKReady) {
+                showStatus('Audio SDK still loading. Please wait.', 'error');
+                return;
+            }
+            
+            if (!awsCredentials) {
+                showStatus('Credentials not ready. Please refresh.', 'error');
+                return;
+            }
+            
+            callButton.disabled = true;
+            callButton.innerHTML = '<span class="loading"></span><span>Connecting...</span>';
+            
+            try {
+                if (awsCredentials.needsRefresh()) {
+                    await awsCredentials.refreshPromise();
+                }
+                
+                const request = new AWS.HttpRequest(
+                    CONFIG.API_ENDPOINT + '/start-call',
+                    CONFIG.REGION
+                );
+                request.method = 'POST';
+                request.headers['Content-Type'] = 'application/json';
+                request.headers['host'] = new URL(CONFIG.API_ENDPOINT).host;
+                request.body = JSON.stringify({
+                    sessionId: sessionId
+                });
+
+                const signer = new AWS.Signers.V4(request, 'execute-api');
+                signer.addAuthorization(awsCredentials, new Date());
+                
+                showStatus('Starting call...', 'info');
+                
+                const response = await fetch(request.endpoint.href, {
+                    method: request.method,
+                    headers: request.headers,
+                    body: request.body
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to start call');
+                }
+                
+                await initializeChimeSession(data.connectionData);
+                
+                showStatus(
+                    '&#x2705; Call connected and active<div class="status-details">Contact ID: ' +
+                    data.contactId + '<br>Max Duration: ' + CONFIG.MAX_DURATION + ' minutes</div>',
+                    'success'
+                );
+                
+                callButton.classList.remove('button-primary');
+                callButton.classList.add('button-danger');
+                callButton.innerHTML = '<span>&#x1F534; End Call</span>';
+                callButton.disabled = false;
+                isCallActive = true;
+                
+                document.getElementById('audioControls').classList.add('active');
+                
+            } catch (error) {
+                console.error('Call error:', error);
+                showStatus('Error: ' + error.message, 'error');
+                callButton.disabled = false;
+                callButton.innerHTML = '<span>&#x1F4DE; Start Call</span>';
+                callButton.classList.remove('button-danger');
+                callButton.classList.add('button-primary');
+                isCallActive = false;
+            }
+        }
+
+        async function hangupCall() {
+            const callButton = document.getElementById('callButton');
+            callButton.disabled = true;
+            callButton.innerHTML = '<span>Ending call...</span>';
+
+            try {
+                if (meetingSession) {
+                    await meetingSession.audioVideo.stop();
+                    meetingSession = null;
+                }
+
+                callButton.classList.remove('button-danger');
+                callButton.classList.add('button-primary');
+                callButton.innerHTML = '<span>&#x1F4DE; Start Call</span>';
+                callButton.disabled = false;
+                isCallActive = false;
+                isMuted = false;
+                
+                document.getElementById('audioControls').classList.remove('active');
+                showStatus('Call ended', 'info');
+                
+                sessionId = generateSessionId();
+                
+            } catch (error) {
+                console.error('Error hanging up:', error);
+                callButton.disabled = false;
+            }
+        }
+        
+        async function initializeChimeSession(connectionData) {
+            try {
+                if (!window.ChimeSDK) {
+                    throw new Error('Chime SDK not loaded');
+                }
+                
+                const ChimeSDK = window.ChimeSDK;
+                const logger = new ChimeSDK.ConsoleLogger('ChimeSDK', ChimeSDK.LogLevel.WARN);
+                const deviceController = new ChimeSDK.DefaultDeviceController(logger);
+                
+                const configuration = new ChimeSDK.MeetingSessionConfiguration(
+                    connectionData.Meeting,
+                    connectionData.Attendee
+                );
+                
+                meetingSession = new ChimeSDK.DefaultMeetingSession(
+                    configuration,
+                    logger,
+                    deviceController
+                );
+                
+                // Chime SDK will request microphone permission here - audio only
+                const audioInputDevices = await meetingSession.audioVideo.listAudioInputDevices();
+                if (audioInputDevices && audioInputDevices.length > 0) {
+                    await meetingSession.audioVideo.startAudioInput(audioInputDevices[0].deviceId);
+                }
+                
+                const audioElement = document.getElementById('remoteAudio');
+                await meetingSession.audioVideo.bindAudioElement(audioElement);
+                
+                const observer = {
+                    audioVideoDidStart: () => {
+                        console.log('[OK] Audio session started');
+                    },
+                    audioVideoDidStop: (sessionStatus) => {
+                        console.log('Audio session stopped:', sessionStatus);
+                        if (isCallActive) {
+                            hangupCall();
+                        }
+                    }
+                };
+                
+                meetingSession.audioVideo.addObserver(observer);
+                
+                // Start with audio only - no video
+                await meetingSession.audioVideo.start();
+                
+                console.log('[OK] Chime session initialized (audio only)');
+
+            } catch (error) {
+                console.error('Error initializing Chime session:', error);
+                throw new Error('Failed to initialize audio session: ' + error.message);
+            }
+        }
+        
+        function toggleMute() {
+            if (!meetingSession) return;
+            
+            const muteButton = document.getElementById('muteButton');
+            
+            if (isMuted) {
+                meetingSession.audioVideo.realtimeUnmuteLocalAudio();
+                muteButton.innerHTML = '&#x1F507; Mute Microphone';
+                isMuted = false;
+            } else {
+                meetingSession.audioVideo.realtimeMuteLocalAudio();
+                muteButton.innerHTML = '&#x1F50A; Unmute Microphone';
+                isMuted = true;
+            }
+        }
+        
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            const typeClass = 'status-' + type;
+            statusDiv.innerHTML = '<div class="status ' + typeClass + '">' + message + '</div>';
+        }
+    </script>
+</body>
+</html>
