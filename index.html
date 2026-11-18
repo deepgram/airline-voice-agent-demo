@@ -226,7 +226,24 @@
             width: 100%; max-width: 42rem; margin: 0 auto; padding-top: 2rem; text-align: center;
         }
         .stage .call-status { margin-top: 2rem; color: rgb(255 255 255 / 0.9); }
-        .stage .caption { margin-top: 1rem; font-size: 1.5rem; line-height: 1.35; color: rgb(255 255 255 / 0.5); text-wrap: balance; }
+        /* The demo walkthrough under the ring: what to say, step by step, for the chosen traveler */
+        .walkthrough {
+            margin-top: 2rem; width: 100%; max-width: 30rem; text-align: left;
+            padding: 1.25rem 1.5rem; border-radius: 1.25rem;
+            border: 1px solid rgb(255 255 255 / 0.2); background: rgb(255 255 255 / 0.08);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+        }
+        .walkthrough h2 { color: rgb(255 255 255 / 0.8); }
+        .walkthrough ol { list-style: none; display: grid; gap: 1rem; margin-top: 1rem; }
+        .walkthrough li { display: grid; grid-template-columns: auto 1fr; gap: 0.875rem; align-items: start; }
+        /* The kit's ProgressStepper "pending" dot. Not magenta: a static list has no next action. */
+        .walkthrough .step-num {
+            display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%;
+            border: 2px solid rgb(255 255 255 / 0.35);
+            font-size: 0.875rem; font-weight: 600; font-variant-numeric: tabular-nums;
+        }
+        .walkthrough .step-title { font-weight: 600; color: #fff; line-height: 2rem; }
+        .walkthrough .step-say { font-size: 0.95rem; color: rgb(255 255 255 / 0.7); }
         .stage .footer {
             display: none; width: 100%; max-width: 42rem; margin: 1.5rem auto 0;
             padding-top: 1.5rem; border-top: 1px solid rgb(255 255 255 / 0.15);
@@ -237,21 +254,10 @@
             .stage .footer { display: block; }
         }
 
-        /* The voice ring: calm circles that swell with whoever is talking */
-        .ring { position: relative; width: 14rem; height: 14rem; display: grid; place-items: center; }
-        .ring span { position: absolute; border-radius: 50%; transition: transform 0.12s ease-out, background 0.3s ease; }
-        .ring .r1 { inset: 0; border: 1px solid rgb(255 255 255 / 0.12); }
-        .ring .r2 { inset: 2.25rem; border: 1px solid rgb(255 255 255 / 0.2); }
-        .ring .core {
-            inset: 4.5rem; display: grid; place-items: center;
-            border: 1px solid rgb(255 255 255 / 0.35); background: rgb(255 255 255 / 0.1);
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            transform: scale(calc(1 + var(--level, 0) * 0.35));
-        }
-        .ring .r2 { transform: scale(calc(1 + var(--level, 0) * 0.12)); }
-        .ring .core .icon { width: 1.75rem; height: 1.75rem; }
-        .ring[data-speaker="agent"] .core { background: rgb(255 255 255 / 0.2); }
-        @media (min-width: 640px) { .ring { width: 16rem; height: 16rem; } .ring .r2 { inset: 2.5rem; } .ring .core { inset: 5rem; } }
+        /* The voice ring: the kit's <deepgram-voice-ring> (vdui/deepgram-voice-ring.js). Its glass
+           takes its tint from the stage glow behind it, so leave its palette at the brand default. */
+        deepgram-voice-ring { display: block; width: 14rem; height: 14rem; }
+        @media (min-width: 640px) { deepgram-voice-ring { width: 16rem; height: 16rem; } }
 
         /* The voice session panel, beside the stage from 1024 up */
         .session-aside { display: none; }
@@ -392,13 +398,13 @@
             </header>
 
             <div class="stage-center">
-                <div class="ring" id="ring" aria-hidden="true">
-                    <span class="r1"></span>
-                    <span class="r2"></span>
-                    <span class="core"><svg class="icon"><use href="#i-wave"/></svg></span>
-                </div>
+                <!-- active="false" until the call starts, so the renderer doesn't run behind the landing -->
+                <deepgram-voice-ring id="ring" state="listening" active="false" aria-hidden="true"></deepgram-voice-ring>
                 <p class="label call-status" id="callStatus" aria-live="polite">Listening</p>
-                <p class="caption">Say your booking number to begin.</p>
+                <section class="walkthrough" aria-labelledby="walkthroughTitle">
+                    <h2 class="label" id="walkthroughTitle">Demo walkthrough · <span data-traveler-name></span></h2>
+                    <ol data-walkthrough></ol>
+                </section>
             </div>
 
             <div class="footer">
@@ -472,6 +478,10 @@
 
     <audio id="remoteAudio"></audio>
 
+    <!-- The voice ring from Deepgram's dg-brand-ui kit (v0.5.0): registers <deepgram-voice-ring>.
+         Loaded before the page script so ring.level hits the element's setter, not a plain property. -->
+    <script src="./vdui/deepgram-voice-ring.js"></script>
+
     <script type="module">
         try {
             const ChimeSDKModule = await import('https://esm.sh/amazon-chime-sdk-js@3.22.0');
@@ -493,6 +503,8 @@
         };
 
         // The demo travelers. These must match the agent's data in Amazon Connect.
+        // walkthrough: the demo script shown on the stage. `say` is quoted unless `hint` is set.
+        const OFF_SCRIPT = { title: 'Go off script', say: 'Ask anything else about your trip or air travel.', hint: true };
         const TRAVELERS = {
             lisa: {
                 name: 'Lisa Chen',
@@ -501,6 +513,12 @@
                     'My booking number is 847291',
                     'When does my flight to Tokyo leave?',
                     'Is seat 15A free? Can you move me there?'
+                ],
+                walkthrough: [
+                    { title: 'Say your booking number', say: 'My booking number is 847291' },
+                    { title: 'Ask about your flight', say: 'When does my flight to Tokyo leave?' },
+                    { title: 'Ask for a seat change', say: 'Is seat 15A free? Can you move me there?' },
+                    OFF_SCRIPT
                 ]
             },
             carlos: {
@@ -509,6 +527,11 @@
                 prompts: [
                     'My booking number is 531068',
                     'Can I upgrade to first class on my next flight?'
+                ],
+                walkthrough: [
+                    { title: 'Say your booking number', say: 'My booking number is 531068' },
+                    { title: 'Ask about an upgrade', say: 'Can I upgrade to first class on my next flight?' },
+                    OFF_SCRIPT
                 ]
             }
         };
@@ -557,6 +580,7 @@
         function showScreen(name) {
             document.getElementById('landing').hidden = name !== 'landing';
             document.getElementById('stageScreen').hidden = name !== 'stage';
+            document.getElementById('ring').setAttribute('active', String(name === 'stage'));
             window.scrollTo(0, 0);
         }
 
@@ -574,6 +598,26 @@
                     const li = document.createElement('li');
                     li.textContent = '“' + prompt + '”';
                     ul.appendChild(li);
+                });
+            });
+            document.querySelectorAll('[data-walkthrough]').forEach((ol) => {
+                ol.innerHTML = '';
+                t.walkthrough.forEach((step, i) => {
+                    const li = document.createElement('li');
+                    const num = document.createElement('span');
+                    num.className = 'step-num';
+                    num.setAttribute('aria-hidden', 'true');
+                    num.textContent = String(i + 1);
+                    const body = document.createElement('div');
+                    const title = document.createElement('p');
+                    title.className = 'step-title';
+                    title.textContent = step.title;
+                    const say = document.createElement('p');
+                    say.className = 'step-say';
+                    say.textContent = step.hint ? step.say : '“' + step.say + '”';
+                    body.append(title, say);
+                    li.append(num, body);
+                    ol.appendChild(li);
                 });
             });
         }
@@ -594,11 +638,14 @@
         }
 
         function setLevel(level, speaker) {
+            // The voice ring: level is a property (0..1), state an attribute (listening | speaking).
+            // Audio-only calls have no "thinking": nothing tells the page the agent is working.
             const ring = document.getElementById('ring');
-            ring.style.setProperty('--level', Math.min(1, Math.max(0, level)).toFixed(3));
-            ring.dataset.speaker = speaker;
+            const state = speaker === 'agent' ? 'speaking' : 'listening';
+            ring.level = Math.min(1, Math.max(0, level));
+            if (ring.getAttribute('state') !== state) ring.setAttribute('state', state);
             const status = document.getElementById('callStatus');
-            const text = isMuted ? 'Muted' : speaker === 'agent' ? 'Larkspur Air is talking' : 'Listening';
+            const text = isMuted && speaker !== 'agent' ? 'Muted' : speaker === 'agent' ? 'Speaking' : 'Listening';
             if (status.textContent !== text) status.textContent = text;
         }
 
@@ -815,11 +862,13 @@
                     for (const id in levels) {
                         if (id === selfId) caller = levels[id]; else agent = Math.max(agent, levels[id]);
                     }
-                    const speaker = agent > 0.05 && agent >= caller ? 'agent' : 'caller';
+                    // The agent being audible is "speaking"; the louder of the two is the level
+                    const speaker = agent > 0.1 ? 'agent' : 'caller';
                     setLevel(Math.max(agent, isMuted ? 0 : caller), speaker);
                 };
                 session.audioVideo.realtimeSubscribeToAttendeeIdPresence((attendeeId, present) => {
                     if (!present) {
+                        session.audioVideo.realtimeUnsubscribeFromVolumeIndicator(attendeeId);
                         delete levels[attendeeId];
                         update();
                         return;
