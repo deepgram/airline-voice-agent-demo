@@ -3,261 +3,610 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Airline Voice Agent Demo</title>
-<script src="https://sdk.amazonaws.com/js/aws-sdk-2.1691.0.min.js"></script>
-    <style>
-        :root {
-            --dg-green: var(--accent);
-            --dg-green-light: #e358fe;
-            --dg-green-dark: #242424;
-            --dg-blue: var(--accent);
-            --dg-bg-darkest: #0a0a0a;
-            --dg-bg-dark: #0a0a0a;
-            --dg-bg-medium: var(--surface-raised);
-            --dg-bg-card: var(--surface-default);
-            --dg-bg-elevated: var(--border-subtle);
-            --dg-border: var(--border-subtle);
-            --dg-text-primary: var(--text-primary);
-            --dg-text-secondary: var(--text-secondary);
-            --dg-text-muted: var(--text-tertiary);
-            --dg-success: var(--text-success);
-            --dg-error: var(--text-error);
-            --dg-warning: #fec84b;
-            --spacing-xs: 4px;
-            --spacing-sm: 8px;
-            --spacing-md: 16px;
-            --spacing-lg: 24px;
-            --spacing-xl: 32px;
-            --spacing-xxl: 48px;
-            --radius-sm: 4px;
-            --radius-md: 8px;
-            --radius-lg: 12px;
-            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
-            --shadow-md: 0 2px 12px rgba(0, 0, 0, 0.5);
-            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: var(--font-sans);
-            background: var(--dg-bg-dark);
-            color: var(--dg-text-primary);
-            line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 var(--spacing-lg); }
-        .header {
-            background: var(--dg-bg-medium);
-            color: var(--text-primary);
-            padding: var(--spacing-md) 0;
-            border-bottom: 1px solid var(--dg-border);
-        }
-        .header-content { display: flex; align-items: center; justify-content: center; }
-        .logo { font-size: 24px; font-weight: 600; color: var(--text-primary); text-decoration: none; }
-        .aws-logo { display: flex; align-items: center; gap: var(--spacing-sm); }
-        .main-content { padding: var(--spacing-xxl) 0; min-height: calc(100vh - 200px); }
-        .hero-section { text-align: center; margin-bottom: var(--spacing-xxl); }
-        .hero-title {
-            font-size: 48px;
-            font-weight: 500;
-            color: var(--dg-text-primary);
-            margin-bottom: var(--spacing-md);
-            line-height: 1.2;
-        }
-        .hero-subtitle {
-            font-size: 20px;
-            color: var(--dg-text-secondary);
-            margin-bottom: var(--spacing-xl);
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        .card {
-            background: var(--dg-bg-card);
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-md);
-            padding: var(--spacing-xl);
-            margin: 0 auto;
-            max-width: 600px;
-            border: 1px solid var(--dg-border);
-        }
-        .info-box {
-            background: var(--dg-bg-medium);
-            border-left: 4px solid var(--dg-green);
-            padding: var(--spacing-lg);
-            margin-bottom: var(--spacing-xl);
-            border-radius: var(--radius-sm);
-        }
-        .info-box h3 { color: var(--dg-text-primary); font-size: 18px; font-weight: 500; margin-bottom: var(--spacing-md); }
-        .info-box ul { list-style: none; padding: 0; }
-        .info-box li {
-            color: var(--dg-text-secondary);
-            font-size: 14px;
-            line-height: 1.6;
-            margin: var(--spacing-sm) 0;
-        }
-        .info-box li::before { content: ''; }
-        .info-box .highlight { color: var(--dg-green); font-weight: 500; }
-        .button {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: var(--spacing-sm);
-            padding: 14px 24px;
-            font-size: 16px;
-            font-weight: 500;
-            border: none;
-            border-radius: var(--radius-full);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-family: inherit;
-            text-decoration: none;
-            min-width: 140px;
-        }
-        .button-primary {
-            background: var(--dg-green);
-            color: var(--text-on-accent);
-            border: 2px solid var(--dg-green);
-            font-weight: 600;
-        }
-        .button-primary:hover:not(:disabled) {
-            background: var(--dg-green-light);
-            border-color: var(--dg-green-light);
-            box-shadow: none;
-            transform: translateY(-1px);
-        }
-        .button-primary:active:not(:disabled) { transform: translateY(0); box-shadow: none; }
-        .button-danger { background: var(--dg-error); color: var(--text-on-accent); border: 2px solid var(--dg-error); }
-        .button-danger:hover:not(:disabled) {
-            background: var(--status-error);
-            border-color: var(--status-error);
-            box-shadow: none;
-            transform: translateY(-1px);
-        }
-        .button:disabled { background: var(--dg-bg-elevated); border-color: var(--dg-bg-elevated); color: var(--dg-text-muted); cursor: not-allowed; opacity: 0.6; transform: none; box-shadow: none; }
-        .button-secondary {
-            background: var(--dg-bg-elevated);
-            color: var(--dg-text-primary);
-            border: 2px solid var(--dg-border);
-            margin-top: var(--spacing-md);
-        }
-        .button-secondary:hover:not(:disabled) {
-            background: var(--dg-bg-medium);
-            border-color: var(--dg-green);
-            color: var(--dg-green);
-            transform: translateY(-1px);
-        }
-        .button-accept { background: var(--dg-success); color: var(--text-on-accent); border: 2px solid var(--dg-success); }
-        .button-accept:hover:not(:disabled) {
-            background: var(--status-success);
-            border-color: var(--status-success);
-            box-shadow: none;
-            transform: translateY(-1px);
-        }
-        .audio-controls { display: none; margin-top: var(--spacing-lg); padding-top: var(--spacing-lg); border-top: 1px solid var(--dg-border); }
-        .audio-controls.active { display: block; }
-        .status { margin-top: var(--spacing-lg); padding: var(--spacing-md) var(--spacing-lg); border-radius: var(--radius-sm); font-size: 14px; line-height: 1.6; }
-        .status-info { background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--dg-blue); border-left: 4px solid var(--dg-blue); }
-        .status-success { background: color-mix(in srgb, var(--text-success) 10%, transparent); color: var(--text-success); border-left: 4px solid var(--text-success); }
-        .status-error { background: color-mix(in srgb, var(--text-error) 10%, transparent); color: var(--dg-error); border-left: 4px solid var(--dg-error); }
-        .status-details { margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid color-mix(in srgb, var(--text-primary) 10%, transparent); font-size: 12px; opacity: 0.85; font-family: var(--font-mono); }
-        .loading { display: inline-block; width: 16px; height: 16px; border: 2px solid color-mix(in srgb, var(--text-primary) 30%, transparent); border-radius: 50%; border-top-color: var(--text-primary); animation: spin 0.8s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .footer { background: var(--dg-bg-darkest); color: var(--text-primary); padding: var(--spacing-xl) 0; margin-top: var(--spacing-xxl); border-top: 1px solid var(--dg-border); }
-        .footer-content { text-align: center; }
-        .footer-links { display: flex; justify-content: center; gap: var(--spacing-lg); flex-wrap: wrap; margin-bottom: var(--spacing-md); }
-        .footer-links a { color: var(--dg-text-muted); text-decoration: none; transition: color 0.2s; font-size: 14px; }
-        .footer-links a:hover { color: var(--dg-green); }
-        .footer-copyright { font-size: 13px; color: var(--dg-text-muted); }
-        @media (max-width: 768px) {
-            .hero-title { font-size: 36px; }
-            .hero-subtitle { font-size: 18px; }
-            .card { padding: var(--spacing-lg); margin: 0 var(--spacing-md); }
-            .footer-links { flex-direction: column; gap: var(--spacing-md); }
-        }
-        @media (max-width: 480px) {
-            .hero-title { font-size: 28px; }
-            .container { padding: 0 var(--spacing-md); }
-            .card { padding: var(--spacing-md); }
-        }
-    </style>
+    <title>Larkspur Air Support</title>
+    <meta name="description" content="Call Larkspur Air’s voice agent from your browser to check a booking, change a seat, or ask about an upgrade. Built with Deepgram." />
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1691.0.min.js"></script>
     <!-- deepgram-rebrand:start -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@100..900&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap" />
     <link rel="stylesheet" href="./deepgram-brand.css" />
-    <meta name="theme-color" content="#fcfaf8" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
-    <link rel="icon" href="./favicon/favicon-2026.svg" type="image/svg+xml" />
-    <link rel="icon" href="./favicon/favicon-2026.ico" sizes="any" />
-    <link rel="icon" href="./favicon/favicon-2026-32x32.png" type="image/png" sizes="32x32" />
-    <link rel="icon" href="./favicon/favicon-2026-16x16.png" type="image/png" sizes="16x16" />
-    <link rel="apple-touch-icon" href="./favicon/apple-touch-icon-2026.png" />
+    <meta name="theme-color" content="#1d1d1d" />
+    <link rel="icon" href="./favicon/larkspur.svg" type="image/svg+xml" />
+    <link rel="icon" href="./favicon.ico" sizes="any" />
+    <link rel="icon" href="./favicon/favicon-32x32.png" type="image/png" sizes="32x32" />
+    <link rel="icon" href="./favicon/favicon-16x16.png" type="image/png" sizes="16x16" />
+    <link rel="apple-touch-icon" href="./favicon/apple-touch-icon.png" />
     <!-- deepgram-rebrand:end -->
+    <style>
+        /*
+         * Voice Demo UI tokens (src/styles/theme.css in the kit), written out as plain CSS because
+         * this page has no build step. Colors are the Deepgram 2026 brand palette; use these
+         * variables, not raw hex. The only raw colors are in the SVG mark.
+         */
+        :root {
+            --ink: #1d1d1d;          /* Off-black */
+            --paper: #fcfaf8;        /* Off-white */
+            --card: #ffffff;         /* Pure white: cards on paper */
+            --line: #e8e5e0;         /* derived: hairlines on paper */
+            --muted: #6b6862;        /* derived: secondary text on paper */
+            --violet: #7f39ff;       /* LED: the voice session only */
+            --magenta: #e042ff;      /* Fuchsia: the one next action */
+            --lime: #7cd941;         /* Phosphor: live, good */
+            --orange: #fa8100;       /* Bakelite: warnings */
+            --red: #eb2a2e;          /* Clay: errors */
+            --sans: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+            --mono: "Azeret Mono", ui-monospace, monospace;
+            --radius-panel: 1.75rem;
+            --dock-clearance: 14rem;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        [hidden] { display: none !important; }
+        html { background: var(--ink); }
+        body {
+            min-height: 100dvh;
+            background: var(--ink);
+            color: #fff;
+            font-family: var(--sans);
+            letter-spacing: normal;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+        button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+        svg { display: block; }
+
+        /* Letter-spaced uppercase means "label". Never uppercase anything else. */
+        .label {
+            font-family: var(--mono);
+            font-size: 0.75rem;
+            line-height: 1rem;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .icon { width: 1.25rem; height: 1.25rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+        .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+        /* ---------- Wordmark: Larkspur Air's mark and name ---------- */
+        .wordmark { display: flex; align-items: center; gap: 0.625rem; color: #fff; }
+        .wordmark .mark { width: 2rem; height: 2rem; flex-shrink: 0; }
+        .wordmark .name { font-size: 1.25rem; font-weight: 600; letter-spacing: -0.025em; }
+        .wordmark .tagline { margin-left: 0.25rem; color: rgb(255 255 255 / 0.7); display: none; }
+        @media (min-width: 640px) { .wordmark .tagline { display: inline; } }
+        /* Over the landing: a frosted pill */
+        .wordmark.pill {
+            padding: 0.5rem 1.25rem 0.5rem 0.75rem;
+            border: 1px solid rgb(255 255 255 / 0.2);
+            border-radius: 999px;
+            background: rgb(0 0 0 / 0.35);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .wordmark.pill .mark { width: 1.75rem; height: 1.75rem; }
+        .wordmark.pill .name { font-size: 1.125rem; }
+
+        /* ---------- Buttons ---------- */
+        /* The one magenta button per screen */
+        .cta {
+            display: inline-flex; align-items: center; justify-content: center; gap: 0.75rem;
+            width: 100%; height: 4rem;
+            border: 2px solid rgb(255 255 255 / 0.25);
+            border-radius: 999px;
+            background: var(--magenta);
+            color: var(--ink);
+            font-size: 0.95rem;
+            box-shadow: 0 0 40px -6px rgb(224 66 255 / 0.7);
+            transition: filter 0.15s ease, opacity 0.15s ease;
+        }
+        .cta:hover:not(:disabled) { filter: brightness(1.1); }
+        .cta:focus-visible { outline: 2px solid var(--magenta); outline-offset: 4px; box-shadow: 0 0 40px -6px rgb(224 66 255 / 0.7); }
+        .cta:disabled { cursor: wait; opacity: 0.8; }
+        .spinner {
+            display: inline-block; width: 1rem; height: 1rem; flex-shrink: 0;
+            border: 2px solid color-mix(in srgb, currentColor 30%, transparent);
+            border-top-color: currentColor; border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* On violet: the mic toggle and End conversation */
+        .controls { display: flex; align-items: center; gap: 0.75rem; }
+        .icon-btn {
+            display: grid; place-items: center; flex-shrink: 0;
+            width: 3.5rem; height: 3.5rem; border-radius: 999px;
+            border: 1px solid rgb(255 255 255 / 0.4);
+            background: rgb(255 255 255 / 0.1);
+            color: #fff; transition: background 0.15s ease;
+        }
+        .icon-btn:hover { background: rgb(255 255 255 / 0.2); }
+        .icon-btn[aria-pressed="true"] { background: #fff; color: var(--violet); }
+        .pill-btn {
+            display: inline-flex; flex: 1; align-items: center; justify-content: center; gap: 0.75rem;
+            height: 3.5rem; border-radius: 999px;
+            border: 2px solid rgb(255 255 255 / 0.4);
+            color: #fff; font-size: 0.85rem; transition: background 0.15s ease;
+        }
+        .pill-btn:hover { background: rgb(255 255 255 / 0.1); }
+        .pill-btn:disabled { opacity: 0.6; cursor: wait; }
+
+        /* ---------- Persona toggle (who's calling) ---------- */
+        .picker-label { margin-bottom: 0.5rem; color: rgb(255 255 255 / 0.8); }
+        .segmented {
+            display: inline-flex; width: fit-content; padding: 0.25rem; border-radius: 999px;
+            border: 1px solid rgb(255 255 255 / 0.2);
+            background: rgb(0 0 0 / 0.35);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .segmented button {
+            padding: 0.5rem 1rem; border-radius: 999px; font-size: 0.7rem;
+            color: rgb(255 255 255 / 0.8); transition: background 0.15s ease, color 0.15s ease;
+        }
+        .segmented button:hover { color: #fff; }
+        .segmented button[aria-checked="true"] { background: #fff; color: var(--ink); }
+        /* High Contrast drops background colours, so mark the selected traveler with system colours */
+        @media (forced-colors: active) {
+            .segmented button[aria-checked="true"] { background: Highlight; color: HighlightText; forced-color-adjust: none; }
+        }
+        .segmented button:disabled { cursor: not-allowed; }
+
+        /* ---------- Notices ---------- */
+        .notice { border: 1px solid; border-radius: 1rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #fff; }
+        .notice-error { border-color: color-mix(in srgb, var(--red) 40%, transparent); background: color-mix(in srgb, var(--red) 15%, transparent); }
+        .notice-info { border-color: rgb(255 255 255 / 0.2); background: rgb(255 255 255 / 0.1); }
+        .notice .detail { display: block; margin-top: 0.25rem; font-family: var(--mono); font-size: 0.7rem; opacity: 0.75; word-break: break-word; }
+
+        /* ---------- Partner logos: Deepgram first ---------- */
+        .partners { display: flex; align-items: center; justify-content: center; gap: 0.75rem; }
+        .partners .times { color: rgb(255 255 255 / 0.4); }
+        .partners .deepgram { height: 1.25rem; width: auto; }
+        .partners .aws { height: 1.75rem; width: auto; }
+        @media (min-width: 640px) {
+            .partners { gap: 1.5rem; }
+            .partners .deepgram { height: 1.5rem; }
+            .partners .aws { height: 2rem; }
+        }
+
+        /* ---------- Landing (HeroLanding, with photo) ---------- */
+        /* The photo sits under two Off-black scrims: a center glow behind the headline,
+           and a fade that darkens toward the Call button at the bottom. */
+        .landing {
+            position: relative; display: flex; flex-direction: column; min-height: 100dvh;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% 45%, rgb(29 29 29 / 0.65), rgb(29 29 29 / 0) 100%),
+                linear-gradient(180deg, rgb(29 29 29 / 0.35) 0%, rgb(29 29 29 / 0.15) 35%, rgb(29 29 29 / 0.85) 100%),
+                var(--ink) url("./images/landing-hero.jpg") 68% center / cover no-repeat;
+        }
+        .landing .spacer { height: 8rem; }
+        .landing > header {
+            position: absolute; inset: 0 0 auto 0; z-index: 10;
+            display: flex; align-items: center; justify-content: space-between; padding: 1.25rem;
+        }
+        .landing .content {
+            position: relative; z-index: 10; margin-top: -1.5rem;
+            display: flex; flex: 1; flex-direction: column; align-items: center;
+            width: 100%; padding: 0 1.25rem 1.5rem; text-align: center;
+        }
+        .landing .kicker { margin-top: 1.5rem; color: rgb(255 255 255 / 0.8); }
+        .landing h1 {
+            margin-top: 1rem;
+            font-family: var(--sans);
+            font-size: 2.6rem; line-height: 1.05; font-weight: 600; letter-spacing: -0.025em;
+            color: #fff; text-wrap: balance;
+        }
+        .landing .intro { margin-top: 1.25rem; font-size: 1.125rem; line-height: 1.625; color: rgb(255 255 255 / 0.92); text-wrap: pretty; }
+        .landing .action { width: 100%; margin-top: auto; padding-top: 2.5rem; }
+        .landing #notice:not(:empty) { margin-bottom: 1rem; }
+        .landing .note { margin-top: 0.75rem; color: rgb(255 255 255 / 0.7); }
+        .landing .footer-sm { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgb(255 255 255 / 0.15); }
+        .landing .footer-lg { display: none; }
+        @media (min-width: 640px) {
+            .landing > header { padding: 2rem; }
+            .landing .content { padding: 0 2rem 1.5rem; }
+            .landing h1 { font-size: 3rem; }
+        }
+        @media (min-width: 1024px) {
+            .landing .spacer { display: none; }
+            .landing .content { max-width: 36rem; margin: 0 auto; padding: 7rem 0 1.5rem; justify-content: center; }
+            .landing h1 { font-size: 3.75rem; }
+            .landing .action { margin-top: 2.5rem; }
+            .landing .footer-sm { display: none; }
+            .landing .footer-lg { display: block; position: relative; z-index: 10; padding: 0 4rem 2.5rem; }
+        }
+
+        /* ---------- Stage (on the call) ---------- */
+        .stage-screen { display: flex; min-height: 100dvh; background: var(--ink); }
+        /* The violet glow behind the stage during a call. One of the kit's three gradients. */
+        .stage-glow { background: radial-gradient(ellipse at 50% 25%, #7a2c9e 0%, #3b1f4a 45%, var(--ink) 80%); }
+        .stage {
+            position: relative; display: flex; flex: 1; flex-direction: column; min-height: 100dvh;
+            overflow: hidden; padding: 1.25rem 1.25rem var(--dock-clearance);
+        }
+        .stage > header { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+        .stage-center {
+            display: flex; flex: 1; flex-direction: column; align-items: center;
+            width: 100%; max-width: 42rem; margin: 0 auto; padding-top: 2rem; text-align: center;
+        }
+        .stage .call-status { margin-top: 2rem; color: rgb(255 255 255 / 0.9); }
+        /* The demo walkthrough under the ring: what to say, step by step, for the chosen traveler */
+        .walkthrough {
+            margin-top: 2rem; width: 100%; max-width: 30rem; text-align: left;
+            padding: 1.25rem 1.5rem; border-radius: 1.25rem;
+            border: 1px solid rgb(255 255 255 / 0.2); background: rgb(255 255 255 / 0.08);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+        }
+        .walkthrough h2 { color: rgb(255 255 255 / 0.8); }
+        .walkthrough ol { list-style: none; display: grid; gap: 1rem; margin-top: 1rem; }
+        .walkthrough li { display: grid; grid-template-columns: auto 1fr; gap: 0.875rem; align-items: start; }
+        /* The kit's ProgressStepper "pending" dot. Not magenta: a static list has no next action. */
+        .walkthrough .step-num {
+            display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%;
+            border: 2px solid rgb(255 255 255 / 0.35);
+            font-size: 0.875rem; font-weight: 600; font-variant-numeric: tabular-nums;
+        }
+        .walkthrough .step-title { font-weight: 600; color: #fff; line-height: 2rem; }
+        .walkthrough .step-say { font-size: 0.95rem; color: rgb(255 255 255 / 0.7); }
+        .stage .footer {
+            display: none; width: 100%; max-width: 42rem; margin: 1.5rem auto 0;
+            padding-top: 1.5rem; border-top: 1px solid rgb(255 255 255 / 0.15);
+        }
+        @media (min-width: 640px) { .stage { padding-left: 2rem; padding-right: 2rem; } }
+        @media (min-width: 1024px) {
+            .stage { padding-bottom: 1.5rem; }
+            .stage .footer { display: block; }
+        }
+
+        /* The voice ring: the kit's <deepgram-voice-ring> (vdui/deepgram-voice-ring.js). Its glass
+           takes its tint from the stage glow behind it, so leave its palette at the brand default. */
+        deepgram-voice-ring { display: block; width: 14rem; height: 14rem; }
+        @media (min-width: 640px) { deepgram-voice-ring { width: 16rem; height: 16rem; } }
+
+        /* The voice session panel, beside the stage from 1024 up */
+        .session-aside { display: none; }
+        @media (min-width: 1024px) {
+            .session-aside { display: block; width: 26rem; flex-shrink: 0; padding: 1.5rem; }
+            .session-aside .sticky {
+                position: sticky; top: 1.5rem;
+                display: flex; flex-direction: column; gap: 1.25rem;
+                height: calc(100dvh - 3rem); min-height: 34rem;
+            }
+        }
+        .panel {
+            display: flex; flex: 1; flex-direction: column; min-height: 30rem;
+            padding: 1.5rem; border-radius: var(--radius-panel);
+            background: var(--violet); color: #fff;
+        }
+        .panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; }
+        .panel h2 { font-family: var(--sans); font-size: 1.5rem; line-height: 1.2; font-weight: 600; letter-spacing: -0.025em; color: #fff; }
+        .panel .meta { margin-top: 0.375rem; font-size: 0.875rem; color: rgb(255 255 255 / 0.8); }
+        .panel .contact { margin-top: 0.125rem; font-family: var(--mono); font-size: 0.7rem; color: rgb(255 255 255 / 0.65); word-break: break-all; }
+        .live-pill {
+            display: inline-flex; align-items: center; gap: 0.375rem; flex-shrink: 0;
+            padding: 0.25rem 0.75rem; border-radius: 999px; background: var(--lime); color: var(--ink);
+        }
+        .live-pill::before { content: ""; width: 0.375rem; height: 0.375rem; border-radius: 50%; background: currentColor; }
+        .traveler {
+            margin-top: 1.5rem; padding: 1.25rem; border-radius: 1.25rem;
+            border: 1px solid rgb(255 255 255 / 0.25); background: rgb(255 255 255 / 0.1);
+        }
+        .traveler .label { font-size: 0.65rem; color: rgb(255 255 255 / 0.8); }
+        .traveler .who { margin-top: 0.5rem; font-size: 1.25rem; font-weight: 600; letter-spacing: -0.02em; }
+        .traveler .trip { margin-top: 0.125rem; color: rgb(255 255 255 / 0.85); }
+        .panel .grow { flex: 1; }
+        .prompt-rail { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgb(255 255 255 / 0.25); }
+        .prompt-rail h3 { font-size: 0.65rem; color: rgb(255 255 255 / 0.8); }
+        .prompt-rail ul { list-style: none; display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .prompt-rail li {
+            display: inline-block; padding: 0.5rem 1rem; border-radius: 999px;
+            border: 1px solid rgb(255 255 255 / 0.3); background: rgb(255 255 255 / 0.12); color: #fff;
+        }
+        .live-line { display: flex; gap: 0.75rem; margin: 1rem 0; font-size: 0.95rem; }
+        .live-line::before { content: ""; width: 0.5rem; height: 0.5rem; margin-top: 0.5rem; border-radius: 50%; background: #fff; flex-shrink: 0; }
+        .aside-note { display: flex; gap: 0.75rem; padding: 0 0.25rem; color: rgb(255 255 255 / 0.6); font-size: 0.9rem; }
+        .aside-note .icon { width: 1rem; height: 1rem; margin-top: 0.2rem; stroke-width: 1.6; }
+
+        /* The dock, below 1024: the session on violet at the bottom */
+        .dock {
+            position: fixed; inset: auto 0 0 0; z-index: 30;
+            padding: 1rem 1.5rem; border-top: 1px solid rgb(255 255 255 / 0.1);
+            background: var(--violet); color: #fff;
+        }
+        .dock .dock-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+        .dock .dot { width: 0.625rem; height: 0.625rem; border-radius: 50%; background: var(--lime); flex-shrink: 0; }
+        .dock .dock-live { font-size: 0.65rem; color: rgb(255 255 255 / 0.8); }
+        .dock .dock-row span:nth-child(2) { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .dock .prompt-rail { margin: 0 0 0.5rem; padding: 0; border: 0; }
+        .dock .prompt-rail ul {
+            flex-wrap: nowrap; overflow-x: auto; margin: 0.75rem -1.5rem 0; padding: 0 1.5rem 0.5rem;
+            scroll-snap-type: x mandatory; scroll-padding: 0 1.5rem;
+            scrollbar-width: thin; scrollbar-color: rgb(255 255 255 / 0.35) transparent;
+        }
+        .dock .prompt-rail li { flex-shrink: 0; white-space: nowrap; scroll-snap-align: start; }
+        @media (min-width: 1024px) { .dock { display: none; } }
+
+        /* ---------- Settings drawer: "About this app", on paper ---------- */
+        /* On dark screens: the frosted gear */
+        .icon-btn.glass {
+            width: 2.75rem; height: 2.75rem;
+            border: 1px solid rgb(255 255 255 / 0.25); background: rgb(0 0 0 / 0.35); color: #fff;
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+        }
+        .icon-btn.glass:hover { background: rgb(0 0 0 / 0.5); }
+        /* On paper */
+        .icon-btn.line { width: 2.75rem; height: 2.75rem; border: 1px solid var(--line); background: var(--card); color: var(--ink); }
+        .icon-btn.line:hover { background: var(--paper); }
+        .icon.sm { width: 1rem; height: 1rem; }
+
+        .drawer { position: fixed; inset: 0; z-index: 40; }
+        .drawer-backdrop { position: absolute; inset: 0; background: rgb(29 29 29 / 0.55); animation: fade 0.2s ease-out both; }
+        .drawer-panel {
+            position: absolute; inset: 0 0 0 auto; width: 100%; max-width: 30rem;
+            display: flex; flex-direction: column;
+            background: var(--paper); color: var(--ink);
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+            animation: slide 0.25s ease-out both;
+        }
+        @media (min-width: 1024px) { .drawer-panel { max-width: 36rem; } }
+        @media (min-width: 1536px) { .drawer-panel { max-width: 42rem; } }
+        .drawer-head {
+            display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+            padding: 1.75rem 1.75rem 1.5rem; border-bottom: 1px solid var(--line);
+        }
+        .drawer-head .icon-btn.line { background: transparent; }
+        .drawer .label { color: rgb(29 29 29 / 0.8); }
+        .drawer h2 { margin-top: 0.5rem; font-family: var(--sans); font-size: 2rem; line-height: 1.25; font-weight: 600; letter-spacing: -0.025em; color: var(--ink); }
+        .drawer-body { flex: 1; overflow-y: auto; padding: 1.75rem; }
+        .drawer-body > section + section { margin-top: 2rem; }
+        .drawer .lead { margin-top: 0.75rem; font-size: 1.1rem; line-height: 1.625; }
+        .drawer .lead + .lead { margin-top: 1rem; }
+        .drawer .muted { margin-top: 1rem; line-height: 1.625; color: var(--muted); }
+        .copy-field {
+            display: flex; align-items: center; gap: 0.75rem; margin-top: 0.75rem;
+            padding: 0.375rem 0.375rem 0.375rem 1.25rem;
+            border: 1px solid var(--line); border-radius: 999px; background: var(--card);
+        }
+        .copy-field .value { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.9rem; }
+        .copy-field [data-copied="true"] { color: var(--violet); }
+        /* The magenta button, drawer size: no glow */
+        a.cta.cta-md {
+            width: auto; height: 3rem; gap: 0.5rem; margin-top: 1rem; padding: 0 1.5rem;
+            border: 0; box-shadow: none; font-size: 0.8rem; text-decoration: none;
+        }
+        .qr-card {
+            display: flex; align-items: center; gap: 1.5rem; margin-top: 1.5rem; padding: 1.25rem;
+            border: 1px solid var(--line); border-radius: var(--radius-panel); background: var(--card);
+        }
+        .qr-card svg { width: 9rem; height: 9rem; flex-shrink: 0; border: 1px solid var(--line); border-radius: 0.75rem; }
+        .qr-card .label + p { margin-top: 0.5rem; line-height: 1.625; }
+        .drawer-foot { padding: 1.25rem 1.75rem; background: var(--ink); }
+        @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slide { from { transform: translateX(100%); } to { transform: none; } }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+        }
+    </style>
 </head>
 <body>
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <a href="#" aria-label="Home" style="display: flex; align-items: center; text-decoration: none;">
-                    <span class="aws-logo" style="margin-right: 16px; color: var(--text-primary);">
-                        <svg aria-label="Deepgram" role="img" style="height: 22px; width: auto; display: block;" viewBox="0 0 125.645 24.0002" xmlns="http://www.w3.org/2000/svg"><path d="M3.79702 12.263V7.25218C3.79702 3.77038 3.16453 2.5054 0 1.8463L0.579276 0C3.00486 0.528099 4.13886 0.528099 5.27284 0.528099C6.196 0.528099 7.11919 0.421661 8.01569 0.317269C8.91225 0.21083 9.80881 0.106438 10.7586 0.106438C16.2177 0.106438 20.3586 4.16748 20.3586 9.7596C20.3586 15.3517 16.2177 19.4128 10.7586 19.4128C9.80881 19.4128 8.91225 19.3064 8.01569 19.2019C7.11919 19.0955 6.196 18.9911 5.27284 18.9911C4.13886 18.9911 3.00486 18.9911 0.579276 19.5192L0 17.6729C3.16453 17.0138 3.79702 15.7468 3.79702 12.267V12.263ZM16.5636 9.75755C16.5636 5.0108 14.4267 2.18813 10.7606 2.18813C8.49264 2.18813 7.068 3.42855 7.068 7.25218V12.263C7.068 16.0866 8.49264 17.327 10.7606 17.327C14.4267 17.327 16.5636 14.5043 16.5636 9.75755Z" fill="currentColor"></path><path d="M21.7279 12.3429C21.7279 7.67397 24.391 4.90654 28.2166 4.90654C31.5388 4.90654 34.0442 7.1745 34.2305 10.947H24.6448C24.8167 13.874 26.53 16.0375 29.3527 16.0375C30.9349 16.0375 32.4374 15.4317 33.2561 13.7164H34.1527C33.467 17.4888 31.33 19.4129 28.1654 19.4129C24.3418 19.4129 21.73 16.5391 21.73 12.345L21.7279 12.3429ZM27.5555 6.67304C26.053 6.67304 25.0234 7.64324 24.7205 9.33603H30.372C30.0629 7.59616 29.0068 6.67304 27.5576 6.67304H27.5555Z" fill="currentColor"></path><path d="M35.3584 12.3429C35.3584 7.67397 38.0215 4.90654 41.8472 4.90654C45.1693 4.90654 47.6747 7.1745 47.861 10.947H38.2753C38.4472 13.874 40.1605 16.0375 42.9832 16.0375C44.5655 16.0375 46.0679 15.4317 46.8867 13.7164H47.7832C47.0975 17.4888 44.9605 19.4129 41.796 19.4129C37.9724 19.4129 35.3605 16.5391 35.3605 12.345L35.3584 12.3429ZM41.188 6.67304C39.6856 6.67304 38.656 7.64324 38.3531 9.33603H44.0046C43.6955 7.59616 42.6393 6.67304 41.1901 6.67304H41.188Z" fill="currentColor"></path><path d="M53.6066 16.4449V20.4405C53.6066 21.0197 53.8175 21.2326 54.847 21.4168L56.2983 21.6809V23.5804H48.7554V21.6809L49.6254 21.4168C50.2845 21.206 50.4953 21.0483 50.4953 20.467V9.28483C50.4953 8.78338 50.2845 8.59914 49.6254 8.4149L48.5446 8.12424V6.75285L52.6589 4.93315H53.6087V7.87457C54.5584 5.93613 56.3515 4.90654 58.5397 4.90654C62.0481 4.90654 64.6845 7.99119 64.6845 12.1587C64.6845 16.3262 62.0481 19.4109 58.5397 19.4109C56.3515 19.4109 54.5563 18.3813 53.6087 16.4428L53.6066 16.4449ZM57.6145 16.9054C59.8559 16.9054 61.6223 15.0325 61.6223 12.1587C61.6223 9.28483 59.8559 7.41192 57.6145 7.41192C55.3731 7.41192 53.6066 9.28483 53.6066 12.1587C53.6066 15.0325 55.3731 16.9054 57.6145 16.9054Z" fill="currentColor"></path><path d="M66.5683 22.2601L67.6101 19.8858H68.1382C69.0998 20.8212 70.5902 21.3615 72.371 21.3759C75.3044 21.3636 76.8538 19.9328 76.8681 17.149C75.8468 18.586 74.2376 19.4109 72.3585 19.4109C68.6128 19.4109 66.0029 16.3241 66.0029 12.1587C66.0029 7.99325 68.6147 4.90654 72.3585 4.90654C74.3359 4.90654 75.9718 5.77648 77.0012 7.41192L78.1084 5.3282H79.9812V16.9587C79.9812 21.3554 77.2649 24 72.3728 24C70.0397 24 67.9684 23.3675 66.5701 22.2601H66.5683ZM72.9625 16.9321C75.0997 16.9321 76.8662 15.0591 76.8662 12.1587C76.8662 9.25828 75.0997 7.41192 72.9625 7.41192C70.8259 7.41192 69.0594 9.28484 69.0594 12.1587C69.0594 15.0325 70.8259 16.9321 72.9625 16.9321Z" fill="currentColor"></path><path d="M82.1073 5.32801H87.2245V7.83343H87.9902C88.1743 6.11811 89.0439 5.32801 90.6798 5.32801H92.7635V8.12409H90.7861C88.1743 8.12409 87.5953 9.1782 87.5953 11.8699V16.4058H90.8129V18.991H82.1091V16.4058H84.484V7.91323H82.1091V5.32801H82.1073Z" fill="currentColor"></path><path d="M93.6063 15.1656C93.6063 12.5026 95.4792 10.9203 98.5643 10.9203H102.123V9.70649C102.123 8.12424 101.227 7.22775 99.6715 7.22775C97.956 7.22775 97.0597 8.07106 96.9819 9.70649H94.1083C94.2146 6.77947 96.4557 4.90654 99.8842 4.90654C103.313 4.90654 105.239 6.6996 105.239 9.86411V18.9892H102.68V16.9321H101.915C101.36 18.6003 100.042 19.4109 98.1955 19.4109C95.4792 19.4109 93.6063 17.671 93.6063 15.1656ZM99.0389 17.1429C100.992 17.1429 102.126 15.7981 102.126 13.5833V13.0819H98.5127C97.4055 13.0819 96.6933 13.874 96.6933 15.0325C96.6933 16.3241 97.5896 17.1429 99.0408 17.1429H99.0389Z" fill="currentColor"></path><path d="M107.816 5.3282H110.375V7.46516H111.167C111.668 5.8563 112.856 4.90654 114.727 4.90654C116.151 4.90654 117.443 5.51243 117.865 7.46516H118.55C119.052 5.8563 120.239 4.90654 122.11 4.90654C123.98 4.90654 125.645 5.77648 125.645 9.02079V18.9892H122.534V9.75768C122.534 8.20205 121.874 7.70053 120.767 7.70053C119.132 7.70053 118.288 8.78132 118.288 10.4434V18.9892H115.177V9.75768C115.177 8.20205 114.518 7.70053 113.411 7.70053C111.775 7.70053 110.932 8.78132 110.932 10.4434V18.9892H107.821V5.3282H107.816Z" fill="currentColor"></path></svg>
-                    </span>
-                    <span class="logo">Airline Voice Agent Demo</span>
-                </a>
+    <!-- Reusable icons and the Larkspur Air mark -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <symbol id="i-mark" viewBox="0 0 32 32">
+            <rect x="7" y="3" width="18" height="26" rx="9" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M12 18.5 18 11" fill="none" stroke="#e042ff" stroke-width="3" stroke-linecap="round"/>
+            <path d="M14 23 20 15.5" fill="none" stroke="#00b2ff" stroke-width="3" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
+        <symbol id="i-mic-off" viewBox="0 0 24 24"><path d="M15 9.3V6a3 3 0 0 0-5.7-1.3M9 9v2a3 3 0 0 0 4.9 2.3M5 11a7 7 0 0 0 11.5 5.3M19 11a7 7 0 0 1-.4 2.3M12 18v3M3 3l18 18"/></symbol>
+        <symbol id="i-wave" viewBox="0 0 24 24"><path d="M4 10v4M8 7v10M12 4v16M16 7v10M20 10v4"/></symbol>
+        <symbol id="i-lock" viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></symbol>
+        <symbol id="i-gear" viewBox="0 0 24 24"><g stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></g></symbol>
+        <symbol id="i-close" viewBox="0 0 20 20"><path stroke-width="1.8" d="m5 5 10 10M15 5 5 15"/></symbol>
+        <symbol id="i-github" viewBox="0 0 24 24"><path stroke-width="1.7" d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></symbol>
+        <symbol id="i-copy" viewBox="0 0 20 20"><g stroke-width="1.6"><rect x="7" y="7" width="10" height="10" rx="2"/><path d="M13 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/></g></symbol>
+        <symbol id="i-check" viewBox="0 0 20 20"><path d="m4.5 10.5 3.5 3.5 7.5-8"/></symbol>
+    </svg>
+
+    <!-- Landing: no call yet, or connecting -->
+    <main id="landing" class="landing">
+        <div class="spacer" aria-hidden="true"></div>
+        <header>
+            <span class="wordmark pill">
+                <svg class="mark" aria-hidden="true"><use href="#i-mark"/></svg>
+                <span class="name">Larkspur Air</span>
+            </span>
+            <button type="button" class="icon-btn glass" data-action="settings" aria-haspopup="dialog" aria-expanded="false" aria-label="Settings" title="Settings">
+                <svg class="icon"><use href="#i-gear"/></svg>
+            </button>
+        </header>
+
+        <div class="content">
+            <p class="label picker-label" id="travelerLabel">Calling as</p>
+            <div class="segmented" role="radiogroup" aria-labelledby="travelerLabel" id="travelerToggle">
+                <button type="button" role="radio" class="label" data-traveler="lisa" aria-checked="true">Lisa Chen</button>
+                <button type="button" role="radio" class="label" data-traveler="carlos" aria-checked="false">Carlos Martinez</button>
+            </div>
+            <p class="label kicker">Let’s check your trip</p>
+            <h1>Manage your trip by voice.</h1>
+            <p class="intro">Pick a traveler, start a call, and say their booking number. We’ll pull up the trip and help with seats, upgrades, and flight times.</p>
+
+            <div class="action">
+                <div id="notice"></div>
+                <button id="callButton" type="button" class="cta label" onclick="startCall()" disabled aria-busy="true">
+                    <span class="spinner" aria-hidden="true"></span><span>Getting ready…</span>
+                </button>
+                <p class="note">Talk naturally. We’ll ask for microphone access.</p>
+                <div class="footer-sm">
+                    <div class="partners" role="group" aria-label="Built with Deepgram, AWS">
+                        <img class="deepgram" src="./logos/deepgram.svg" alt="Deepgram" width="125" height="24" />
+                        <span class="times" aria-hidden="true">×</span>
+                        <img class="aws" src="./logos/aws.png" alt="AWS" width="320" height="191" />
+                    </div>
+                </div>
             </div>
         </div>
-    </header>
-    
-    <main class="main-content">
-        <div class="container">
-            <section class="hero-section">
-                <h1 class="hero-title">Airline Voice Agent Demo</h1>
-                <p class="hero-subtitle">Experience browser-based calling powered by Deepgram and Amazon Connect</p>
-            </section>
-            
-            <div class="card">
-                <div class="info-box">
-                    <h3>How It Works</h3>
-                    <ul>
-                        <li>Click <span class="highlight">Start Call</span> to connect to an agent powered by <span class="highlight">Deepgram STT/TTS</span> and <span class="highlight">Connect AI Agent</span> to understand and respond in real time.</li>
-                    </ul>
-                    <h3 style="margin-top: var(--spacing-md);">Demo Scenarios</h3>
-                    <ul>
-                        <li><span style="color: var(--dg-green); font-weight: bold; margin-right: 6px;">1.</span>Call as Lisa Chen. Booking 847291. Ask about your flight to Tokyo and request a seat change to 15A if it&#x27;s free or any other air travel related questions.</li>
-                        <li><span style="color: var(--dg-green); font-weight: bold; margin-right: 6px;">2.</span>Call as Carlos Martinez. Booking 531068. Ask about upgrading to first class for your next flight or any other travel related questions.</li>
-                    </ul>
-                </div>
-                
-                <button id="callButton" class="button button-primary" onclick="toggleCall()" disabled>
-                    <span>Initializing...</span>
-                </button>
-                
-                <div id="audioControls" class="audio-controls">
-                    <button id="muteButton" class="button button-secondary" onclick="toggleMute()">
-                        &#x1F507; Mute Microphone
-                    </button>
-                </div>
-                
-                <div id="statusMessage"></div>
 
+        <div class="footer-lg">
+            <div class="partners" role="group" aria-label="Built with Deepgram, AWS">
+                <img class="deepgram" src="./logos/deepgram.svg" alt="Deepgram" width="125" height="24" />
+                <span class="times" aria-hidden="true">×</span>
+                <img class="aws" src="./logos/aws.png" alt="AWS" width="320" height="191" />
             </div>
         </div>
     </main>
-    
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-links">
-                    <a href="https://aws.amazon.com/connect/">Amazon Connect</a>
-                    <a href="https://deepgram.com/">Deepgram</a>
+
+    <!-- Stage: on the call -->
+    <main id="stageScreen" class="stage-screen" hidden>
+        <div class="stage stage-glow">
+            <header>
+                <span class="wordmark">
+                    <svg class="mark" aria-hidden="true"><use href="#i-mark"/></svg>
+                    <span class="name">Larkspur Air</span>
+                    <span class="label tagline">Airline · Customer care</span>
+                </span>
+                <button type="button" class="icon-btn glass" data-action="settings" aria-haspopup="dialog" aria-expanded="false" aria-label="Settings" title="Settings">
+                    <svg class="icon"><use href="#i-gear"/></svg>
+                </button>
+            </header>
+
+            <div class="stage-center">
+                <!-- active="false" until the call starts, so the renderer doesn't run behind the landing -->
+                <deepgram-voice-ring id="ring" state="listening" active="false" aria-hidden="true"></deepgram-voice-ring>
+                <p class="label call-status" id="callStatus" aria-live="polite">Listening</p>
+                <section class="walkthrough" aria-labelledby="walkthroughTitle">
+                    <h2 class="label" id="walkthroughTitle">Demo walkthrough · <span data-traveler-name></span></h2>
+                    <ol data-walkthrough></ol>
+                </section>
+            </div>
+
+            <div class="footer">
+                <div class="partners" role="group" aria-label="Built with Deepgram, AWS">
+                    <img class="deepgram" src="./logos/deepgram.svg" alt="Deepgram" width="125" height="24" />
+                    <span class="times" aria-hidden="true">×</span>
+                    <img class="aws" src="./logos/aws.png" alt="AWS" width="320" height="191" />
                 </div>
             </div>
         </div>
-    </footer>
-    
+
+        <aside class="session-aside" aria-label="Voice session">
+            <div class="sticky">
+                <section class="panel">
+                    <div class="panel-head">
+                        <h2>Voice session</h2>
+                        <span class="live-pill label">Live</span>
+                    </div>
+                    <p class="meta">Deepgram speech-to-text and text-to-speech · Amazon Connect</p>
+                    <p class="contact" data-contact></p>
+
+                    <div class="traveler">
+                        <p class="label">Calling as</p>
+                        <p class="who" data-traveler-name></p>
+                        <p class="trip" data-traveler-trip></p>
+                    </div>
+
+                    <div class="grow"></div>
+
+                    <div class="prompt-rail">
+                        <h3 class="label">Try asking</h3>
+                        <ul data-prompts></ul>
+                    </div>
+                    <p class="live-line" data-live-line></p>
+                    <div class="controls">
+                        <button type="button" class="icon-btn" data-action="mute" aria-pressed="false" aria-label="Mute microphone" title="Mute microphone">
+                            <svg class="icon"><use href="#i-mic"/></svg>
+                        </button>
+                        <button type="button" class="pill-btn label" data-action="end">
+                            <svg class="icon"><use href="#i-wave"/></svg><span>End conversation</span>
+                        </button>
+                    </div>
+                </section>
+                <p class="aside-note">
+                    <svg class="icon"><use href="#i-lock"/></svg>
+                    <span>This is a demo. The travelers and bookings are made up, and no real flights change.</span>
+                </p>
+            </div>
+        </aside>
+
+        <div class="dock" role="region" aria-label="Voice session">
+            <p class="dock-row">
+                <span class="dot" aria-hidden="true"></span>
+                <span data-dock-traveler></span>
+                <span class="label dock-live">Live</span>
+            </p>
+            <div class="prompt-rail">
+                <h3 class="label">Try asking</h3>
+                <ul data-prompts></ul>
+            </div>
+            <div class="controls">
+                <button type="button" class="icon-btn" data-action="mute" aria-pressed="false" aria-label="Mute microphone" title="Mute microphone">
+                    <svg class="icon"><use href="#i-mic"/></svg>
+                </button>
+                <button type="button" class="pill-btn label" data-action="end">
+                    <svg class="icon"><use href="#i-wave"/></svg><span>End conversation</span>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Settings: About this app. Opening it during a call mutes the mic until it closes. -->
+    <div id="settings" class="drawer" hidden>
+        <div class="drawer-backdrop" data-close aria-hidden="true"></div>
+        <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+            <header class="drawer-head">
+                <div>
+                    <p class="label">Settings</p>
+                    <h2 id="settingsTitle">About this app</h2>
+                </div>
+                <button type="button" class="icon-btn line" data-close aria-label="Close" title="Close">
+                    <svg class="icon"><use href="#i-close"/></svg>
+                </button>
+            </header>
+            <div class="drawer-body">
+                <section>
+                    <h3 class="label">What it does</h3>
+                    <p class="lead">Larkspur Air Support is a voice agent for a fictional airline. Travelers say their booking number, and it pulls up the trip, answers questions about the flight, and helps with seats and upgrades.</p>
+                    <p class="lead">It’s a demo. The travelers and bookings are made up, and no real flights change.</p>
+                    <p class="muted">Built with Deepgram speech-to-text and text-to-speech, Amazon Connect, and the Amazon Chime SDK.</p>
+                </section>
+                <section>
+                    <h3 class="label">Source code</h3>
+                    <div class="copy-field">
+                        <svg class="icon" aria-hidden="true"><use href="#i-github"/></svg>
+                        <span class="value" title="https://github.com/deepgram/airline-voice-agent-demo">github.com/deepgram/airline-voice-agent-demo</span>
+                        <button type="button" class="icon-btn line" data-action="copy-repo" aria-label="Copy" title="Copy">
+                            <svg class="icon sm"><use href="#i-copy"/></svg>
+                        </button>
+                    </div>
+                    <a class="cta cta-md label" href="https://github.com/deepgram/airline-voice-agent-demo" target="_blank" rel="noopener noreferrer">Open on GitHub <span aria-hidden="true">↗</span></a>
+                    <div class="qr-card">
+                        <!-- Generated with the kit's qrcode package (error correction M), as its QrCode does -->
+                        <svg viewBox="-2 -2 37 37" role="img" aria-label="QR code for github.com/deepgram/airline-voice-agent-demo" shape-rendering="crispEdges">
+                            <rect x="-2" y="-2" width="37" height="37" fill="#ffffff"/>
+                            <path fill="#1d1d1d" d="M0 0h7v1h-7zM8 0h1v1h-1zM11 0h2v1h-2zM14 0h5v1h-5zM23 0h1v1h-1zM26 0h7v1h-7zM0 1h1v1h-1zM6 1h1v1h-1zM9 1h3v1h-3zM16 1h2v1h-2zM19 1h1v1h-1zM22 1h1v1h-1zM26 1h1v1h-1zM32 1h1v1h-1zM0 2h1v1h-1zM2 2h3v1h-3zM6 2h1v1h-1zM9 2h2v1h-2zM12 2h2v1h-2zM15 2h2v1h-2zM20 2h2v1h-2zM23 2h2v1h-2zM26 2h1v1h-1zM28 2h3v1h-3zM32 2h1v1h-1zM0 3h1v1h-1zM2 3h3v1h-3zM6 3h1v1h-1zM8 3h3v1h-3zM12 3h1v1h-1zM14 3h2v1h-2zM17 3h2v1h-2zM23 3h1v1h-1zM26 3h1v1h-1zM28 3h3v1h-3zM32 3h1v1h-1zM0 4h1v1h-1zM2 4h3v1h-3zM6 4h1v1h-1zM8 4h1v1h-1zM10 4h3v1h-3zM14 4h1v1h-1zM18 4h3v1h-3zM23 4h1v1h-1zM26 4h1v1h-1zM28 4h3v1h-3zM32 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM8 5h1v1h-1zM10 5h1v1h-1zM13 5h2v1h-2zM16 5h1v1h-1zM19 5h1v1h-1zM21 5h1v1h-1zM26 5h1v1h-1zM32 5h1v1h-1zM0 6h7v1h-7zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM20 6h1v1h-1zM22 6h1v1h-1zM24 6h1v1h-1zM26 6h7v1h-7zM8 7h3v1h-3zM14 7h9v1h-9zM24 7h1v1h-1zM0 8h1v1h-1zM4 8h1v1h-1zM6 8h3v1h-3zM11 8h2v1h-2zM17 8h1v1h-1zM20 8h2v1h-2zM25 8h5v1h-5zM32 8h1v1h-1zM0 9h5v1h-5zM7 9h1v1h-1zM10 9h1v1h-1zM13 9h1v1h-1zM15 9h2v1h-2zM21 9h1v1h-1zM23 9h1v1h-1zM25 9h1v1h-1zM29 9h3v1h-3zM4 10h1v1h-1zM6 10h2v1h-2zM9 10h1v1h-1zM11 10h1v1h-1zM15 10h1v1h-1zM17 10h1v1h-1zM23 10h1v1h-1zM26 10h1v1h-1zM29 10h1v1h-1zM31 10h1v1h-1zM0 11h2v1h-2zM7 11h1v1h-1zM9 11h1v1h-1zM11 11h2v1h-2zM14 11h1v1h-1zM17 11h2v1h-2zM20 11h4v1h-4zM25 11h1v1h-1zM31 11h1v1h-1zM4 12h1v1h-1zM6 12h1v1h-1zM8 12h2v1h-2zM12 12h4v1h-4zM18 12h7v1h-7zM26 12h1v1h-1zM28 12h2v1h-2zM31 12h1v1h-1zM1 13h3v1h-3zM5 13h1v1h-1zM11 13h1v1h-1zM16 13h1v1h-1zM21 13h3v1h-3zM25 13h1v1h-1zM27 13h1v1h-1zM29 13h1v1h-1zM0 14h1v1h-1zM4 14h1v1h-1zM6 14h3v1h-3zM14 14h1v1h-1zM16 14h2v1h-2zM20 14h1v1h-1zM23 14h4v1h-4zM29 14h3v1h-3zM0 15h1v1h-1zM3 15h1v1h-1zM11 15h2v1h-2zM17 15h1v1h-1zM20 15h4v1h-4zM25 15h2v1h-2zM0 16h1v1h-1zM3 16h1v1h-1zM6 16h4v1h-4zM11 16h1v1h-1zM13 16h1v1h-1zM15 16h1v1h-1zM17 16h1v1h-1zM20 16h3v1h-3zM24 16h1v1h-1zM26 16h1v1h-1zM28 16h1v1h-1zM31 16h1v1h-1zM0 17h1v1h-1zM2 17h1v1h-1zM5 17h1v1h-1zM7 17h3v1h-3zM11 17h2v1h-2zM14 17h2v1h-2zM17 17h2v1h-2zM23 17h1v1h-1zM25 17h1v1h-1zM29 17h3v1h-3zM0 18h2v1h-2zM4 18h1v1h-1zM6 18h1v1h-1zM8 18h3v1h-3zM12 18h1v1h-1zM15 18h1v1h-1zM18 18h1v1h-1zM20 18h2v1h-2zM23 18h1v1h-1zM27 18h1v1h-1zM29 18h1v1h-1zM31 18h1v1h-1zM1 19h3v1h-3zM8 19h2v1h-2zM11 19h3v1h-3zM15 19h1v1h-1zM19 19h9v1h-9zM1 20h1v1h-1zM3 20h8v1h-8zM13 20h1v1h-1zM15 20h2v1h-2zM20 20h2v1h-2zM24 20h1v1h-1zM26 20h1v1h-1zM28 20h2v1h-2zM0 21h2v1h-2zM3 21h1v1h-1zM7 21h2v1h-2zM11 21h2v1h-2zM18 21h1v1h-1zM23 21h1v1h-1zM25 21h1v1h-1zM27 21h1v1h-1zM29 21h3v1h-3zM4 22h4v1h-4zM10 22h1v1h-1zM13 22h3v1h-3zM18 22h1v1h-1zM20 22h1v1h-1zM22 22h4v1h-4zM27 22h1v1h-1zM31 22h1v1h-1zM2 23h3v1h-3zM7 23h1v1h-1zM9 23h1v1h-1zM11 23h1v1h-1zM13 23h1v1h-1zM15 23h4v1h-4zM20 23h2v1h-2zM23 23h4v1h-4zM28 23h2v1h-2zM0 24h4v1h-4zM6 24h1v1h-1zM8 24h2v1h-2zM11 24h1v1h-1zM13 24h1v1h-1zM17 24h1v1h-1zM19 24h10v1h-10zM32 24h1v1h-1zM8 25h1v1h-1zM10 25h1v1h-1zM13 25h1v1h-1zM15 25h2v1h-2zM20 25h2v1h-2zM23 25h2v1h-2zM28 25h1v1h-1zM30 25h2v1h-2zM0 26h7v1h-7zM8 26h1v1h-1zM10 26h3v1h-3zM15 26h1v1h-1zM17 26h1v1h-1zM20 26h2v1h-2zM24 26h1v1h-1zM26 26h1v1h-1zM28 26h2v1h-2zM31 26h1v1h-1zM0 27h1v1h-1zM6 27h1v1h-1zM10 27h3v1h-3zM14 27h5v1h-5zM20 27h2v1h-2zM24 27h1v1h-1zM28 27h1v1h-1zM32 27h1v1h-1zM0 28h1v1h-1zM2 28h3v1h-3zM6 28h1v1h-1zM8 28h3v1h-3zM14 28h1v1h-1zM18 28h1v1h-1zM20 28h3v1h-3zM24 28h6v1h-6zM31 28h2v1h-2zM0 29h1v1h-1zM2 29h3v1h-3zM6 29h1v1h-1zM10 29h1v1h-1zM12 29h2v1h-2zM16 29h1v1h-1zM21 29h1v1h-1zM23 29h2v1h-2zM26 29h4v1h-4zM0 30h1v1h-1zM2 30h3v1h-3zM6 30h1v1h-1zM9 30h1v1h-1zM11 30h2v1h-2zM14 30h1v1h-1zM16 30h1v1h-1zM23 30h2v1h-2zM26 30h3v1h-3zM0 31h1v1h-1zM6 31h1v1h-1zM9 31h1v1h-1zM13 31h2v1h-2zM17 31h1v1h-1zM20 31h2v1h-2zM23 31h3v1h-3zM0 32h7v1h-7zM8 32h1v1h-1zM12 32h4v1h-4zM17 32h1v1h-1zM19 32h4v1h-4zM24 32h1v1h-1zM26 32h1v1h-1zM29 32h1v1h-1zM32 32h1v1h-1z"/>
+                        </svg>
+                        <div>
+                            <p class="label">Scan to open</p>
+                            <p>Point your phone’s camera here to open the code on GitHub.</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <footer class="drawer-foot">
+                <div class="partners" role="group" aria-label="Built with Deepgram, AWS">
+                    <img class="deepgram" src="./logos/deepgram.svg" alt="Deepgram" width="125" height="24" />
+                    <span class="times" aria-hidden="true">×</span>
+                    <img class="aws" src="./logos/aws.png" alt="AWS" width="320" height="191" />
+                </div>
+            </footer>
+        </div>
+    </div>
+
     <audio id="remoteAudio"></audio>
-    
+
+    <!-- The voice ring from Deepgram's dg-brand-ui kit (v0.5.0): registers <deepgram-voice-ring>.
+         Loaded before the page script so ring.level hits the element's setter, not a plain property. -->
+    <script src="./vdui/deepgram-voice-ring.js"></script>
+
     <script type="module">
         try {
             const ChimeSDKModule = await import('https://esm.sh/amazon-chime-sdk-js@3.22.0');
@@ -269,7 +618,7 @@
             window.dispatchEvent(new CustomEvent('chimesdkerror', { detail: { error: error.message } }));
         }
     </script>
-    
+
     <script>
         const CONFIG = {
             API_ENDPOINT: 'https://hyisaymjee.execute-api.us-west-2.amazonaws.com',
@@ -277,87 +626,304 @@
             COGNITO_IDENTITY_POOL_ID: 'us-west-2:65bbb454-2912-47ca-8559-95281d88a669',
             MAX_DURATION: 10
         };
-        
+
+        // The demo travelers. These must match the agent's data in Amazon Connect.
+        // walkthrough: the demo script shown on the stage. `say` is quoted unless `hint` is set.
+        const OFF_SCRIPT = { title: 'Go off script', say: 'Ask anything else about your trip or air travel.', hint: true };
+        const TRAVELERS = {
+            lisa: {
+                name: 'Lisa Chen',
+                trip: 'Booking 847291 · Flying to Tokyo',
+                prompts: [
+                    'My booking number is 847291',
+                    'When does my flight to Tokyo leave?',
+                    'Is seat 15A free? Can you move me there?'
+                ],
+                walkthrough: [
+                    { title: 'Say your booking number', say: 'My booking number is 847291' },
+                    { title: 'Ask about your flight', say: 'When does my flight to Tokyo leave?' },
+                    { title: 'Ask for a seat change', say: 'Is seat 15A free? Can you move me there?' },
+                    OFF_SCRIPT
+                ]
+            },
+            carlos: {
+                name: 'Carlos Martinez',
+                trip: 'Booking 531068',
+                prompts: [
+                    'My booking number is 531068',
+                    'Can I upgrade to first class on my next flight?'
+                ],
+                walkthrough: [
+                    { title: 'Say your booking number', say: 'My booking number is 531068' },
+                    { title: 'Ask about an upgrade', say: 'Can I upgrade to first class on my next flight?' },
+                    OFF_SCRIPT
+                ]
+            }
+        };
+
         let sessionId = generateSessionId();
         let meetingSession = null;
         let isCallActive = false;
         let isMuted = false;
         let chimeSDKReady = false;
         let awsCredentials = null;
-        
-        console.log('[INIT] AI Voice Agent Demo initializing...');
-        
+        let traveler = 'lisa';
+
+        const ICON = (id) => '<svg class="icon" aria-hidden="true"><use href="#' + id + '"/></svg>';
+
+        console.log('[INIT] Larkspur Air voice demo initializing…');
+
+        // ---------- UI ----------
+
+        function setCta(state) {
+            const button = document.getElementById('callButton');
+            const busy = state === 'loading' || state === 'connecting';
+            button.disabled = state !== 'ready';
+            if (busy) button.setAttribute('aria-busy', 'true'); else button.removeAttribute('aria-busy');
+            const text = { loading: 'Getting ready…', connecting: 'Connecting…', ready: 'Call Larkspur Air', unavailable: 'Call Larkspur Air' }[state];
+            button.innerHTML = (busy ? '<span class="spinner" aria-hidden="true"></span>' : ICON('i-mic')) + '<span>' + text + '</span>';
+        }
+
+        // Errors and notices show above the Call button. type: 'error' | 'info' | null to clear.
+        function showStatus(message, type, detail) {
+            const notice = document.getElementById('notice');
+            notice.innerHTML = '';
+            if (!message || !type || type === 'success') return;
+            const p = document.createElement('p');
+            p.className = 'notice notice-' + type;
+            p.setAttribute('role', type === 'error' ? 'alert' : 'status');
+            p.textContent = message;
+            if (detail) {
+                const d = document.createElement('span');
+                d.className = 'detail';
+                d.textContent = detail;
+                p.appendChild(d);
+            }
+            notice.appendChild(p);
+        }
+
+        function showScreen(name) {
+            document.getElementById('landing').hidden = name !== 'landing';
+            document.getElementById('stageScreen').hidden = name !== 'stage';
+            document.getElementById('ring').setAttribute('active', String(name === 'stage'));
+            window.scrollTo(0, 0);
+        }
+
+        function renderTraveler() {
+            const t = TRAVELERS[traveler];
+            document.querySelectorAll('#travelerToggle button').forEach((b) => {
+                b.setAttribute('aria-checked', String(b.dataset.traveler === traveler));
+            });
+            document.querySelectorAll('[data-traveler-name]').forEach((el) => { el.textContent = t.name; });
+            document.querySelectorAll('[data-traveler-trip]').forEach((el) => { el.textContent = t.trip; });
+            document.querySelectorAll('[data-dock-traveler]').forEach((el) => { el.textContent = t.name + ' · ' + t.trip; });
+            document.querySelectorAll('[data-prompts]').forEach((ul) => {
+                ul.innerHTML = '';
+                t.prompts.forEach((prompt) => {
+                    const li = document.createElement('li');
+                    li.textContent = '“' + prompt + '”';
+                    ul.appendChild(li);
+                });
+            });
+            document.querySelectorAll('[data-walkthrough]').forEach((ol) => {
+                ol.innerHTML = '';
+                t.walkthrough.forEach((step, i) => {
+                    const li = document.createElement('li');
+                    const num = document.createElement('span');
+                    num.className = 'step-num';
+                    num.setAttribute('aria-hidden', 'true');
+                    num.textContent = String(i + 1);
+                    const body = document.createElement('div');
+                    const title = document.createElement('p');
+                    title.className = 'step-title';
+                    title.textContent = step.title;
+                    const say = document.createElement('p');
+                    say.className = 'step-say';
+                    say.textContent = step.hint ? step.say : '“' + step.say + '”';
+                    body.append(title, say);
+                    li.append(num, body);
+                    ol.appendChild(li);
+                });
+            });
+        }
+
+        function renderMute() {
+            document.querySelectorAll('[data-action="mute"]').forEach((b) => {
+                const label = isMuted ? 'Unmute microphone' : 'Mute microphone';
+                b.setAttribute('aria-pressed', String(isMuted));
+                b.setAttribute('aria-label', label);
+                b.title = label;
+                b.innerHTML = ICON(isMuted ? 'i-mic-off' : 'i-mic');
+            });
+            document.querySelectorAll('[data-live-line]').forEach((el) => {
+                el.textContent = isMuted
+                    ? 'Your microphone is muted. Unmute it to keep talking.'
+                    : 'Conversation is live. Just talk, and interrupt anytime.';
+            });
+        }
+
+        function setLevel(level, speaker) {
+            // The voice ring: level is a property (0..1), state an attribute (listening | speaking).
+            // Audio-only calls have no "thinking": nothing tells the page the agent is working.
+            const ring = document.getElementById('ring');
+            const state = speaker === 'agent' ? 'speaking' : 'listening';
+            ring.level = Math.min(1, Math.max(0, level));
+            if (ring.getAttribute('state') !== state) ring.setAttribute('state', state);
+            const status = document.getElementById('callStatus');
+            const text = isMuted && speaker !== 'agent' ? 'Muted' : speaker === 'agent' ? 'Speaking' : 'Listening';
+            if (status.textContent !== text) status.textContent = text;
+        }
+
+        document.getElementById('travelerToggle').addEventListener('click', (e) => {
+            const b = e.target.closest('button[data-traveler]');
+            if (!b || isCallActive) return;
+            traveler = b.dataset.traveler;
+            renderTraveler();
+        });
+        document.querySelectorAll('[data-action="mute"]').forEach((b) => b.addEventListener('click', toggleMute));
+        document.querySelectorAll('[data-action="end"]').forEach((b) => b.addEventListener('click', hangupCall));
+
+        // ---------- Settings drawer ----------
+        // Like the kit's Drawer: focus moves in and back, Tab stays inside, Escape and the backdrop
+        // close it, and the page behind doesn't scroll. During a call it mutes the mic while open.
+
+        const settings = document.getElementById('settings');
+        let settingsOpener = null;
+        let mutedForSettings = false;
+
+        function onSettingsKey(event) {
+            if (event.key === 'Escape') {
+                closeSettings();
+                return;
+            }
+            if (event.key !== 'Tab') return;
+            const focusable = settings.querySelectorAll('a[href], button:not([disabled])');
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            }
+        }
+
+        function openSettings() {
+            settingsOpener = document.activeElement;
+            settings.hidden = false;
+            document.body.style.overflow = 'hidden';
+            document.querySelectorAll('[data-action="settings"]').forEach((b) => b.setAttribute('aria-expanded', 'true'));
+            if (isCallActive && meetingSession && !isMuted) {
+                toggleMute();
+                mutedForSettings = true;
+            }
+            settings.querySelector('.drawer-head [data-close]').focus();
+            document.addEventListener('keydown', onSettingsKey);
+        }
+
+        function closeSettings() {
+            if (settings.hidden) return;
+            settings.hidden = true;
+            document.body.style.overflow = '';
+            document.querySelectorAll('[data-action="settings"]').forEach((b) => b.setAttribute('aria-expanded', 'false'));
+            if (mutedForSettings && isCallActive && isMuted) toggleMute();
+            mutedForSettings = false;
+            document.removeEventListener('keydown', onSettingsKey);
+            if (settingsOpener && settingsOpener.focus) settingsOpener.focus();
+        }
+
+        document.querySelectorAll('[data-action="settings"]').forEach((b) => b.addEventListener('click', openSettings));
+        settings.querySelectorAll('[data-close]').forEach((el) => el.addEventListener('click', closeSettings));
+
+        const copyRepo = settings.querySelector('[data-action="copy-repo"]');
+        copyRepo.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText('https://github.com/deepgram/airline-voice-agent-demo');
+            } catch (error) {
+                console.warn('Copy failed:', error);
+                return;
+            }
+            copyRepo.dataset.copied = 'true';
+            copyRepo.setAttribute('aria-label', 'Copied');
+            copyRepo.title = 'Copied';
+            copyRepo.innerHTML = ICON('i-check').replace('class="icon"', 'class="icon sm"');
+            clearTimeout(copyRepo.resetTimer);
+            copyRepo.resetTimer = setTimeout(() => {
+                copyRepo.dataset.copied = 'false';
+                copyRepo.setAttribute('aria-label', 'Copy');
+                copyRepo.title = 'Copy';
+                copyRepo.innerHTML = ICON('i-copy').replace('class="icon"', 'class="icon sm"');
+            }, 2000);
+        });
+
+        renderTraveler();
+        renderMute();
+
+        // ---------- Call ----------
+
         window.addEventListener('chimesdkloaded', () => {
             chimeSDKReady = true;
             console.log('[OK] Chime SDK ready');
             initializeAWSCredentials();
         });
-        
+
         window.addEventListener('chimesdkerror', (e) => {
             console.error('[ERROR] Chime SDK error:', e.detail.error);
-            showStatus('Failed to load audio SDK. Please refresh the page.', 'error');
+            setCta('unavailable');
+            document.getElementById('callButton').disabled = true;
+            showStatus('We couldn’t load the audio tools. Refresh the page to try again.', 'error');
         });
-        
+
         async function initializeAWSCredentials() {
             try {
                 console.log('Initializing AWS credentials...');
-                showStatus('Obtaining credentials...', 'info');
-                
+                setCta('loading');
+
                 AWS.config.region = CONFIG.REGION;
                 AWS.config.credentials = new AWS.CognitoIdentityCredentials({
                     IdentityPoolId: CONFIG.COGNITO_IDENTITY_POOL_ID
                 });
-                
+
                 await AWS.config.credentials.getPromise();
                 awsCredentials = AWS.config.credentials;
-                
-                console.log('[OK] Credentials obtained');
-                
-                const callButton = document.getElementById('callButton');
-                callButton.disabled = false;
-                callButton.innerHTML = '<span>&#x1F4DE; Start Call</span>';
 
-                showStatus('&#x2705; Ready to call', 'success');
-                
+                console.log('[OK] Credentials obtained');
+                setCta('ready');
             } catch (error) {
                 console.error('[ERROR] Failed to initialize credentials:', error);
-                showStatus('Failed to initialize. Please refresh the page.', 'error');
+                setCta('unavailable');
+                document.getElementById('callButton').disabled = true;
+                showStatus('We couldn’t get the call ready. Refresh the page to try again.', 'error');
             }
         }
-        
+
         function generateSessionId() {
             return 'session-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
         }
-        
-        async function toggleCall() {
-            if (isCallActive) {
-                await hangupCall();
-            } else {
-                await startCall();
-            }
-        }
-        
+
         async function startCall() {
-            const callButton = document.getElementById('callButton');
-            
+            if (isCallActive) return;
+
             if (!chimeSDKReady) {
-                showStatus('Audio SDK still loading. Please wait.', 'error');
+                showStatus('The audio tools are still loading. Try again in a moment.', 'error');
                 return;
             }
-            
+
             if (!awsCredentials) {
-                showStatus('Credentials not ready. Please refresh.', 'error');
+                showStatus('The call isn’t ready yet. Refresh the page to try again.', 'error');
                 return;
             }
-            
-            callButton.disabled = true;
-            callButton.innerHTML = '<span class="loading"></span><span>Connecting...</span>';
-            
+
+            showStatus(null);
+            setCta('connecting');
+            document.querySelectorAll('#travelerToggle button').forEach((b) => { b.disabled = true; });
+
             try {
                 if (awsCredentials.needsRefresh()) {
                     await awsCredentials.refreshPromise();
                 }
-                
+
                 const request = new AWS.HttpRequest(
                     CONFIG.API_ENDPOINT + '/start-call',
                     CONFIG.REGION
@@ -371,107 +937,94 @@
 
                 const signer = new AWS.Signers.V4(request, 'execute-api');
                 signer.addAuthorization(awsCredentials, new Date());
-                
-                showStatus('Starting call...', 'info');
-                
+
                 const response = await fetch(request.endpoint.href, {
                     method: request.method,
                     headers: request.headers,
                     body: request.body
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (!response.ok) {
                     throw new Error(data.error || 'Failed to start call');
                 }
-                
+
                 await initializeChimeSession(data.connectionData);
-                
-                showStatus(
-                    '&#x2705; Call connected and active<div class="status-details">Contact ID: ' +
-                    data.contactId + '<br>Max Duration: ' + CONFIG.MAX_DURATION + ' minutes</div>',
-                    'success'
-                );
-                
-                callButton.classList.remove('button-primary');
-                callButton.classList.add('button-danger');
-                callButton.innerHTML = '<span>&#x1F534; End Call</span>';
-                callButton.disabled = false;
+
                 isCallActive = true;
-                
-                document.getElementById('audioControls').classList.add('active');
-                
+                isMuted = false;
+                renderMute();
+                setLevel(0, 'caller');
+                document.querySelectorAll('[data-contact]').forEach((el) => {
+                    el.textContent = 'Contact ' + data.contactId + ' · ends after ' + CONFIG.MAX_DURATION + ' min';
+                });
+                showScreen('stage');
+
             } catch (error) {
                 console.error('Call error:', error);
-                showStatus('Error: ' + error.message, 'error');
-                callButton.disabled = false;
-                callButton.innerHTML = '<span>&#x1F4DE; Start Call</span>';
-                callButton.classList.remove('button-danger');
-                callButton.classList.add('button-primary');
+                showStatus('We couldn’t connect the call. Try again in a moment.', 'error', error.message);
+                setCta('ready');
                 isCallActive = false;
+            } finally {
+                document.querySelectorAll('#travelerToggle button').forEach((b) => { b.disabled = false; });
             }
         }
 
         async function hangupCall() {
-            const callButton = document.getElementById('callButton');
-            callButton.disabled = true;
-            callButton.innerHTML = '<span>Ending call...</span>';
+            if (!isCallActive) return;
+            isCallActive = false;
+            document.querySelectorAll('[data-action="end"]').forEach((b) => { b.disabled = true; });
 
             try {
                 if (meetingSession) {
-                    await meetingSession.audioVideo.stop();
+                    const session = meetingSession;
                     meetingSession = null;
+                    await session.audioVideo.stop();
                 }
-
-                callButton.classList.remove('button-danger');
-                callButton.classList.add('button-primary');
-                callButton.innerHTML = '<span>&#x1F4DE; Start Call</span>';
-                callButton.disabled = false;
-                isCallActive = false;
-                isMuted = false;
-                
-                document.getElementById('audioControls').classList.remove('active');
-                showStatus('Call ended', 'info');
-                
-                sessionId = generateSessionId();
-                
             } catch (error) {
                 console.error('Error hanging up:', error);
-                callButton.disabled = false;
             }
+
+            isMuted = false;
+            renderMute();
+            document.querySelectorAll('[data-action="end"]').forEach((b) => { b.disabled = false; });
+            sessionId = generateSessionId();
+            setCta('ready');
+            showStatus('Call ended. Start again whenever you’re ready.', 'info');
+            showScreen('landing');
         }
-        
+
         async function initializeChimeSession(connectionData) {
             try {
                 if (!window.ChimeSDK) {
                     throw new Error('Chime SDK not loaded');
                 }
-                
+
                 const ChimeSDK = window.ChimeSDK;
                 const logger = new ChimeSDK.ConsoleLogger('ChimeSDK', ChimeSDK.LogLevel.WARN);
                 const deviceController = new ChimeSDK.DefaultDeviceController(logger);
-                
+
                 const configuration = new ChimeSDK.MeetingSessionConfiguration(
                     connectionData.Meeting,
                     connectionData.Attendee
                 );
-                
+
                 meetingSession = new ChimeSDK.DefaultMeetingSession(
                     configuration,
                     logger,
                     deviceController
                 );
-                
+
                 // Chime SDK will request microphone permission here - audio only
                 const audioInputDevices = await meetingSession.audioVideo.listAudioInputDevices();
                 if (audioInputDevices && audioInputDevices.length > 0) {
                     await meetingSession.audioVideo.startAudioInput(audioInputDevices[0].deviceId);
                 }
-                
+
                 const audioElement = document.getElementById('remoteAudio');
                 await meetingSession.audioVideo.bindAudioElement(audioElement);
-                
+
                 const observer = {
                     audioVideoDidStart: () => {
                         console.log('[OK] Audio session started');
@@ -483,12 +1036,13 @@
                         }
                     }
                 };
-                
+
                 meetingSession.audioVideo.addObserver(observer);
-                
+                watchVolume(meetingSession, connectionData.Attendee && connectionData.Attendee.AttendeeId);
+
                 // Start with audio only - no video
                 await meetingSession.audioVideo.start();
-                
+
                 console.log('[OK] Chime session initialized (audio only)');
 
             } catch (error) {
@@ -496,27 +1050,51 @@
                 throw new Error('Failed to initialize audio session: ' + error.message);
             }
         }
-        
+
+        // Drives the ring and the status line from Chime's volume indicators. Purely visual:
+        // if anything here fails, the call carries on without it.
+        function watchVolume(session, selfId) {
+            try {
+                const levels = {};
+                const update = () => {
+                    let caller = 0, agent = 0;
+                    for (const id in levels) {
+                        if (id === selfId) caller = levels[id]; else agent = Math.max(agent, levels[id]);
+                    }
+                    // The agent being audible is "speaking"; the louder of the two is the level
+                    const speaker = agent > 0.1 ? 'agent' : 'caller';
+                    setLevel(Math.max(agent, isMuted ? 0 : caller), speaker);
+                };
+                session.audioVideo.realtimeSubscribeToAttendeeIdPresence((attendeeId, present) => {
+                    if (!present) {
+                        session.audioVideo.realtimeUnsubscribeFromVolumeIndicator(attendeeId);
+                        delete levels[attendeeId];
+                        update();
+                        return;
+                    }
+                    session.audioVideo.realtimeSubscribeToVolumeIndicator(attendeeId, (id, volume) => {
+                        if (volume === null || volume === undefined) return;
+                        levels[id] = volume;
+                        update();
+                    });
+                });
+            } catch (error) {
+                console.warn('Volume indicator unavailable:', error);
+            }
+        }
+
         function toggleMute() {
             if (!meetingSession) return;
-            
-            const muteButton = document.getElementById('muteButton');
-            
+
             if (isMuted) {
                 meetingSession.audioVideo.realtimeUnmuteLocalAudio();
-                muteButton.innerHTML = '&#x1F507; Mute Microphone';
                 isMuted = false;
             } else {
                 meetingSession.audioVideo.realtimeMuteLocalAudio();
-                muteButton.innerHTML = '&#x1F50A; Unmute Microphone';
                 isMuted = true;
             }
-        }
-        
-        function showStatus(message, type) {
-            const statusDiv = document.getElementById('statusMessage');
-            const typeClass = 'status-' + type;
-            statusDiv.innerHTML = '<div class="status ' + typeClass + '">' + message + '</div>';
+            renderMute();
+            setLevel(0, 'caller');
         }
     </script>
 </body>
