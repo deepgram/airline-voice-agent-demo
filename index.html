@@ -27,6 +27,9 @@
         :root {
             --ink: #1d1d1d;          /* Off-black */
             --paper: #fcfaf8;        /* Off-white */
+            --card: #ffffff;         /* Pure white: cards on paper */
+            --line: #e8e5e0;         /* derived: hairlines on paper */
+            --muted: #6b6862;        /* derived: secondary text on paper */
             --violet: #7f39ff;       /* LED: the voice session only */
             --magenta: #e042ff;      /* Fuchsia: the one next action */
             --lime: #7cd941;         /* Phosphor: live, good */
@@ -322,6 +325,64 @@
         .dock .prompt-rail li { flex-shrink: 0; white-space: nowrap; scroll-snap-align: start; }
         @media (min-width: 1024px) { .dock { display: none; } }
 
+        /* ---------- Settings drawer: "About this app", on paper ---------- */
+        /* On dark screens: the frosted gear */
+        .icon-btn.glass {
+            width: 2.75rem; height: 2.75rem;
+            border: 1px solid rgb(255 255 255 / 0.25); background: rgb(0 0 0 / 0.35); color: #fff;
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+        }
+        .icon-btn.glass:hover { background: rgb(0 0 0 / 0.5); }
+        /* On paper */
+        .icon-btn.line { width: 2.75rem; height: 2.75rem; border: 1px solid var(--line); background: var(--card); color: var(--ink); }
+        .icon-btn.line:hover { background: var(--paper); }
+        .icon.sm { width: 1rem; height: 1rem; }
+
+        .drawer { position: fixed; inset: 0; z-index: 40; }
+        .drawer-backdrop { position: absolute; inset: 0; background: rgb(29 29 29 / 0.55); animation: fade 0.2s ease-out both; }
+        .drawer-panel {
+            position: absolute; inset: 0 0 0 auto; width: 100%; max-width: 30rem;
+            display: flex; flex-direction: column;
+            background: var(--paper); color: var(--ink);
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+            animation: slide 0.25s ease-out both;
+        }
+        @media (min-width: 1024px) { .drawer-panel { max-width: 36rem; } }
+        @media (min-width: 1536px) { .drawer-panel { max-width: 42rem; } }
+        .drawer-head {
+            display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+            padding: 1.75rem 1.75rem 1.5rem; border-bottom: 1px solid var(--line);
+        }
+        .drawer-head .icon-btn.line { background: transparent; }
+        .drawer .label { color: rgb(29 29 29 / 0.8); }
+        .drawer h2 { margin-top: 0.5rem; font-family: var(--sans); font-size: 2rem; line-height: 1.25; font-weight: 600; letter-spacing: -0.025em; color: var(--ink); }
+        .drawer-body { flex: 1; overflow-y: auto; padding: 1.75rem; }
+        .drawer-body > section + section { margin-top: 2rem; }
+        .drawer .lead { margin-top: 0.75rem; font-size: 1.1rem; line-height: 1.625; }
+        .drawer .lead + .lead { margin-top: 1rem; }
+        .drawer .muted { margin-top: 1rem; line-height: 1.625; color: var(--muted); }
+        .copy-field {
+            display: flex; align-items: center; gap: 0.75rem; margin-top: 0.75rem;
+            padding: 0.375rem 0.375rem 0.375rem 1.25rem;
+            border: 1px solid var(--line); border-radius: 999px; background: var(--card);
+        }
+        .copy-field .value { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.9rem; }
+        .copy-field [data-copied="true"] { color: var(--violet); }
+        /* The magenta button, drawer size: no glow */
+        a.cta.cta-md {
+            width: auto; height: 3rem; gap: 0.5rem; margin-top: 1rem; padding: 0 1.5rem;
+            border: 0; box-shadow: none; font-size: 0.8rem; text-decoration: none;
+        }
+        .qr-card {
+            display: flex; align-items: center; gap: 1.5rem; margin-top: 1.5rem; padding: 1.25rem;
+            border: 1px solid var(--line); border-radius: var(--radius-panel); background: var(--card);
+        }
+        .qr-card svg { width: 9rem; height: 9rem; flex-shrink: 0; border: 1px solid var(--line); border-radius: 0.75rem; }
+        .qr-card .label + p { margin-top: 0.5rem; line-height: 1.625; }
+        .drawer-foot { padding: 1.25rem 1.75rem; background: var(--ink); }
+        @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slide { from { transform: translateX(100%); } to { transform: none; } }
+
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
         }
@@ -339,6 +400,11 @@
         <symbol id="i-mic-off" viewBox="0 0 24 24"><path d="M15 9.3V6a3 3 0 0 0-5.7-1.3M9 9v2a3 3 0 0 0 4.9 2.3M5 11a7 7 0 0 0 11.5 5.3M19 11a7 7 0 0 1-.4 2.3M12 18v3M3 3l18 18"/></symbol>
         <symbol id="i-wave" viewBox="0 0 24 24"><path d="M4 10v4M8 7v10M12 4v16M16 7v10M20 10v4"/></symbol>
         <symbol id="i-lock" viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></symbol>
+        <symbol id="i-gear" viewBox="0 0 24 24"><g stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></g></symbol>
+        <symbol id="i-close" viewBox="0 0 20 20"><path stroke-width="1.8" d="m5 5 10 10M15 5 5 15"/></symbol>
+        <symbol id="i-github" viewBox="0 0 24 24"><path stroke-width="1.7" d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></symbol>
+        <symbol id="i-copy" viewBox="0 0 20 20"><g stroke-width="1.6"><rect x="7" y="7" width="10" height="10" rx="2"/><path d="M13 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/></g></symbol>
+        <symbol id="i-check" viewBox="0 0 20 20"><path d="m4.5 10.5 3.5 3.5 7.5-8"/></symbol>
     </svg>
 
     <!-- Landing: no call yet, or connecting -->
@@ -349,6 +415,9 @@
                 <svg class="mark" aria-hidden="true"><use href="#i-mark"/></svg>
                 <span class="name">Larkspur Air</span>
             </span>
+            <button type="button" class="icon-btn glass" data-action="settings" aria-haspopup="dialog" aria-expanded="false" aria-label="Settings" title="Settings">
+                <svg class="icon"><use href="#i-gear"/></svg>
+            </button>
         </header>
 
         <div class="content">
@@ -395,6 +464,9 @@
                     <span class="name">Larkspur Air</span>
                     <span class="label tagline">Airline · Customer care</span>
                 </span>
+                <button type="button" class="icon-btn glass" data-action="settings" aria-haspopup="dialog" aria-expanded="false" aria-label="Settings" title="Settings">
+                    <svg class="icon"><use href="#i-gear"/></svg>
+                </button>
             </header>
 
             <div class="stage-center">
@@ -475,6 +547,59 @@
             </div>
         </div>
     </main>
+
+    <!-- Settings: About this app. Opening it during a call mutes the mic until it closes. -->
+    <div id="settings" class="drawer" hidden>
+        <div class="drawer-backdrop" data-close aria-hidden="true"></div>
+        <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+            <header class="drawer-head">
+                <div>
+                    <p class="label">Settings</p>
+                    <h2 id="settingsTitle">About this app</h2>
+                </div>
+                <button type="button" class="icon-btn line" data-close aria-label="Close" title="Close">
+                    <svg class="icon"><use href="#i-close"/></svg>
+                </button>
+            </header>
+            <div class="drawer-body">
+                <section>
+                    <h3 class="label">What it does</h3>
+                    <p class="lead">Larkspur Air Support is a voice agent for a fictional airline. Travelers say their booking number, and it pulls up the trip, answers questions about the flight, and helps with seats and upgrades.</p>
+                    <p class="lead">It’s a demo. The travelers and bookings are made up, and no real flights change.</p>
+                    <p class="muted">Built with Deepgram speech-to-text and text-to-speech, Amazon Connect, and the Amazon Chime SDK.</p>
+                </section>
+                <section>
+                    <h3 class="label">Source code</h3>
+                    <div class="copy-field">
+                        <svg class="icon" aria-hidden="true"><use href="#i-github"/></svg>
+                        <span class="value" title="https://github.com/deepgram/airline-voice-agent-demo">github.com/deepgram/airline-voice-agent-demo</span>
+                        <button type="button" class="icon-btn line" data-action="copy-repo" aria-label="Copy" title="Copy">
+                            <svg class="icon sm"><use href="#i-copy"/></svg>
+                        </button>
+                    </div>
+                    <a class="cta cta-md label" href="https://github.com/deepgram/airline-voice-agent-demo" target="_blank" rel="noopener noreferrer">Open on GitHub <span aria-hidden="true">↗</span></a>
+                    <div class="qr-card">
+                        <!-- Generated with the kit's qrcode package (error correction M), as its QrCode does -->
+                        <svg viewBox="-2 -2 37 37" role="img" aria-label="QR code for github.com/deepgram/airline-voice-agent-demo" shape-rendering="crispEdges">
+                            <rect x="-2" y="-2" width="37" height="37" fill="#ffffff"/>
+                            <path fill="#1d1d1d" d="M0 0h7v1h-7zM8 0h1v1h-1zM11 0h2v1h-2zM14 0h5v1h-5zM23 0h1v1h-1zM26 0h7v1h-7zM0 1h1v1h-1zM6 1h1v1h-1zM9 1h3v1h-3zM16 1h2v1h-2zM19 1h1v1h-1zM22 1h1v1h-1zM26 1h1v1h-1zM32 1h1v1h-1zM0 2h1v1h-1zM2 2h3v1h-3zM6 2h1v1h-1zM9 2h2v1h-2zM12 2h2v1h-2zM15 2h2v1h-2zM20 2h2v1h-2zM23 2h2v1h-2zM26 2h1v1h-1zM28 2h3v1h-3zM32 2h1v1h-1zM0 3h1v1h-1zM2 3h3v1h-3zM6 3h1v1h-1zM8 3h3v1h-3zM12 3h1v1h-1zM14 3h2v1h-2zM17 3h2v1h-2zM23 3h1v1h-1zM26 3h1v1h-1zM28 3h3v1h-3zM32 3h1v1h-1zM0 4h1v1h-1zM2 4h3v1h-3zM6 4h1v1h-1zM8 4h1v1h-1zM10 4h3v1h-3zM14 4h1v1h-1zM18 4h3v1h-3zM23 4h1v1h-1zM26 4h1v1h-1zM28 4h3v1h-3zM32 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM8 5h1v1h-1zM10 5h1v1h-1zM13 5h2v1h-2zM16 5h1v1h-1zM19 5h1v1h-1zM21 5h1v1h-1zM26 5h1v1h-1zM32 5h1v1h-1zM0 6h7v1h-7zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM20 6h1v1h-1zM22 6h1v1h-1zM24 6h1v1h-1zM26 6h7v1h-7zM8 7h3v1h-3zM14 7h9v1h-9zM24 7h1v1h-1zM0 8h1v1h-1zM4 8h1v1h-1zM6 8h3v1h-3zM11 8h2v1h-2zM17 8h1v1h-1zM20 8h2v1h-2zM25 8h5v1h-5zM32 8h1v1h-1zM0 9h5v1h-5zM7 9h1v1h-1zM10 9h1v1h-1zM13 9h1v1h-1zM15 9h2v1h-2zM21 9h1v1h-1zM23 9h1v1h-1zM25 9h1v1h-1zM29 9h3v1h-3zM4 10h1v1h-1zM6 10h2v1h-2zM9 10h1v1h-1zM11 10h1v1h-1zM15 10h1v1h-1zM17 10h1v1h-1zM23 10h1v1h-1zM26 10h1v1h-1zM29 10h1v1h-1zM31 10h1v1h-1zM0 11h2v1h-2zM7 11h1v1h-1zM9 11h1v1h-1zM11 11h2v1h-2zM14 11h1v1h-1zM17 11h2v1h-2zM20 11h4v1h-4zM25 11h1v1h-1zM31 11h1v1h-1zM4 12h1v1h-1zM6 12h1v1h-1zM8 12h2v1h-2zM12 12h4v1h-4zM18 12h7v1h-7zM26 12h1v1h-1zM28 12h2v1h-2zM31 12h1v1h-1zM1 13h3v1h-3zM5 13h1v1h-1zM11 13h1v1h-1zM16 13h1v1h-1zM21 13h3v1h-3zM25 13h1v1h-1zM27 13h1v1h-1zM29 13h1v1h-1zM0 14h1v1h-1zM4 14h1v1h-1zM6 14h3v1h-3zM14 14h1v1h-1zM16 14h2v1h-2zM20 14h1v1h-1zM23 14h4v1h-4zM29 14h3v1h-3zM0 15h1v1h-1zM3 15h1v1h-1zM11 15h2v1h-2zM17 15h1v1h-1zM20 15h4v1h-4zM25 15h2v1h-2zM0 16h1v1h-1zM3 16h1v1h-1zM6 16h4v1h-4zM11 16h1v1h-1zM13 16h1v1h-1zM15 16h1v1h-1zM17 16h1v1h-1zM20 16h3v1h-3zM24 16h1v1h-1zM26 16h1v1h-1zM28 16h1v1h-1zM31 16h1v1h-1zM0 17h1v1h-1zM2 17h1v1h-1zM5 17h1v1h-1zM7 17h3v1h-3zM11 17h2v1h-2zM14 17h2v1h-2zM17 17h2v1h-2zM23 17h1v1h-1zM25 17h1v1h-1zM29 17h3v1h-3zM0 18h2v1h-2zM4 18h1v1h-1zM6 18h1v1h-1zM8 18h3v1h-3zM12 18h1v1h-1zM15 18h1v1h-1zM18 18h1v1h-1zM20 18h2v1h-2zM23 18h1v1h-1zM27 18h1v1h-1zM29 18h1v1h-1zM31 18h1v1h-1zM1 19h3v1h-3zM8 19h2v1h-2zM11 19h3v1h-3zM15 19h1v1h-1zM19 19h9v1h-9zM1 20h1v1h-1zM3 20h8v1h-8zM13 20h1v1h-1zM15 20h2v1h-2zM20 20h2v1h-2zM24 20h1v1h-1zM26 20h1v1h-1zM28 20h2v1h-2zM0 21h2v1h-2zM3 21h1v1h-1zM7 21h2v1h-2zM11 21h2v1h-2zM18 21h1v1h-1zM23 21h1v1h-1zM25 21h1v1h-1zM27 21h1v1h-1zM29 21h3v1h-3zM4 22h4v1h-4zM10 22h1v1h-1zM13 22h3v1h-3zM18 22h1v1h-1zM20 22h1v1h-1zM22 22h4v1h-4zM27 22h1v1h-1zM31 22h1v1h-1zM2 23h3v1h-3zM7 23h1v1h-1zM9 23h1v1h-1zM11 23h1v1h-1zM13 23h1v1h-1zM15 23h4v1h-4zM20 23h2v1h-2zM23 23h4v1h-4zM28 23h2v1h-2zM0 24h4v1h-4zM6 24h1v1h-1zM8 24h2v1h-2zM11 24h1v1h-1zM13 24h1v1h-1zM17 24h1v1h-1zM19 24h10v1h-10zM32 24h1v1h-1zM8 25h1v1h-1zM10 25h1v1h-1zM13 25h1v1h-1zM15 25h2v1h-2zM20 25h2v1h-2zM23 25h2v1h-2zM28 25h1v1h-1zM30 25h2v1h-2zM0 26h7v1h-7zM8 26h1v1h-1zM10 26h3v1h-3zM15 26h1v1h-1zM17 26h1v1h-1zM20 26h2v1h-2zM24 26h1v1h-1zM26 26h1v1h-1zM28 26h2v1h-2zM31 26h1v1h-1zM0 27h1v1h-1zM6 27h1v1h-1zM10 27h3v1h-3zM14 27h5v1h-5zM20 27h2v1h-2zM24 27h1v1h-1zM28 27h1v1h-1zM32 27h1v1h-1zM0 28h1v1h-1zM2 28h3v1h-3zM6 28h1v1h-1zM8 28h3v1h-3zM14 28h1v1h-1zM18 28h1v1h-1zM20 28h3v1h-3zM24 28h6v1h-6zM31 28h2v1h-2zM0 29h1v1h-1zM2 29h3v1h-3zM6 29h1v1h-1zM10 29h1v1h-1zM12 29h2v1h-2zM16 29h1v1h-1zM21 29h1v1h-1zM23 29h2v1h-2zM26 29h4v1h-4zM0 30h1v1h-1zM2 30h3v1h-3zM6 30h1v1h-1zM9 30h1v1h-1zM11 30h2v1h-2zM14 30h1v1h-1zM16 30h1v1h-1zM23 30h2v1h-2zM26 30h3v1h-3zM0 31h1v1h-1zM6 31h1v1h-1zM9 31h1v1h-1zM13 31h2v1h-2zM17 31h1v1h-1zM20 31h2v1h-2zM23 31h3v1h-3zM0 32h7v1h-7zM8 32h1v1h-1zM12 32h4v1h-4zM17 32h1v1h-1zM19 32h4v1h-4zM24 32h1v1h-1zM26 32h1v1h-1zM29 32h1v1h-1zM32 32h1v1h-1z"/>
+                        </svg>
+                        <div>
+                            <p class="label">Scan to open</p>
+                            <p>Point your phone’s camera here to open the code on GitHub.</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <footer class="drawer-foot">
+                <div class="partners" role="group" aria-label="Built with Deepgram, AWS">
+                    <img class="deepgram" src="./logos/deepgram.svg" alt="Deepgram" width="125" height="24" />
+                    <span class="times" aria-hidden="true">×</span>
+                    <img class="aws" src="./logos/aws.png" alt="AWS" width="320" height="191" />
+                </div>
+            </footer>
+        </div>
+    </div>
 
     <audio id="remoteAudio"></audio>
 
@@ -657,6 +782,80 @@
         });
         document.querySelectorAll('[data-action="mute"]').forEach((b) => b.addEventListener('click', toggleMute));
         document.querySelectorAll('[data-action="end"]').forEach((b) => b.addEventListener('click', hangupCall));
+
+        // ---------- Settings drawer ----------
+        // Like the kit's Drawer: focus moves in and back, Tab stays inside, Escape and the backdrop
+        // close it, and the page behind doesn't scroll. During a call it mutes the mic while open.
+
+        const settings = document.getElementById('settings');
+        let settingsOpener = null;
+        let mutedForSettings = false;
+
+        function onSettingsKey(event) {
+            if (event.key === 'Escape') {
+                closeSettings();
+                return;
+            }
+            if (event.key !== 'Tab') return;
+            const focusable = settings.querySelectorAll('a[href], button:not([disabled])');
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            }
+        }
+
+        function openSettings() {
+            settingsOpener = document.activeElement;
+            settings.hidden = false;
+            document.body.style.overflow = 'hidden';
+            document.querySelectorAll('[data-action="settings"]').forEach((b) => b.setAttribute('aria-expanded', 'true'));
+            if (isCallActive && meetingSession && !isMuted) {
+                toggleMute();
+                mutedForSettings = true;
+            }
+            settings.querySelector('.drawer-head [data-close]').focus();
+            document.addEventListener('keydown', onSettingsKey);
+        }
+
+        function closeSettings() {
+            if (settings.hidden) return;
+            settings.hidden = true;
+            document.body.style.overflow = '';
+            document.querySelectorAll('[data-action="settings"]').forEach((b) => b.setAttribute('aria-expanded', 'false'));
+            if (mutedForSettings && isCallActive && isMuted) toggleMute();
+            mutedForSettings = false;
+            document.removeEventListener('keydown', onSettingsKey);
+            if (settingsOpener && settingsOpener.focus) settingsOpener.focus();
+        }
+
+        document.querySelectorAll('[data-action="settings"]').forEach((b) => b.addEventListener('click', openSettings));
+        settings.querySelectorAll('[data-close]').forEach((el) => el.addEventListener('click', closeSettings));
+
+        const copyRepo = settings.querySelector('[data-action="copy-repo"]');
+        copyRepo.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText('https://github.com/deepgram/airline-voice-agent-demo');
+            } catch (error) {
+                console.warn('Copy failed:', error);
+                return;
+            }
+            copyRepo.dataset.copied = 'true';
+            copyRepo.setAttribute('aria-label', 'Copied');
+            copyRepo.title = 'Copied';
+            copyRepo.innerHTML = ICON('i-check').replace('class="icon"', 'class="icon sm"');
+            clearTimeout(copyRepo.resetTimer);
+            copyRepo.resetTimer = setTimeout(() => {
+                copyRepo.dataset.copied = 'false';
+                copyRepo.setAttribute('aria-label', 'Copy');
+                copyRepo.title = 'Copy';
+                copyRepo.innerHTML = ICON('i-copy').replace('class="icon"', 'class="icon sm"');
+            }, 2000);
+        });
 
         renderTraveler();
         renderMute();
