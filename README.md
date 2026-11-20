@@ -12,6 +12,11 @@ Live: https://d2e3t4f1ay5rue.cloudfront.net/
 `CONFIG` to start a Connect contact, and joins the returned Chime meeting for the audio. There is no
 build step.
 
+The caller's mic runs through Amazon Voice Focus, the Chime SDK's noise suppression, so the agent
+hears the caller over a loud room (a conference floor, an open office). Voice Focus loads its model
+from Amazon's CDN on the first call. If the browser can't run it, the call goes ahead on the raw
+mic, and the console logs which one is in use.
+
 ## Brand
 
 - Name: Larkspur Air. Tagline: Airline · Customer care.

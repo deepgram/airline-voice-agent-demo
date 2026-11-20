@@ -666,6 +666,7 @@
         let isCallActive = false;
         let isMuted = false;
         let chimeSDKReady = false;
+        let voiceFocus = null; // Voice Focus transformer, made once and reused for each call
         let awsCredentials = null;
         let traveler = 'lisa';
 
@@ -981,6 +982,8 @@
                     const session = meetingSession;
                     meetingSession = null;
                     await session.audioVideo.stop();
+                    // Release the mic (and stop Voice Focus); stop() leaves the input running.
+                    await session.audioVideo.stopAudioInput();
                 }
             } catch (error) {
                 console.error('Error hanging up:', error);
@@ -995,6 +998,30 @@
             showScreen('landing');
         }
 
+        // Starts the caller's mic through Amazon Voice Focus, the Chime SDK's noise suppression,
+        // so the agent hears the caller and not the crowd around them (a show floor, an office).
+        // Where the browser can't run it, the call goes ahead on the raw mic.
+        async function startMicrophone(deviceId, logger) {
+            const ChimeSDK = window.ChimeSDK;
+            try {
+                if (!voiceFocus && await ChimeSDK.VoiceFocusDeviceTransformer.isSupported(undefined, { logger })) {
+                    voiceFocus = await ChimeSDK.VoiceFocusDeviceTransformer.create(undefined, { logger });
+                }
+                if (voiceFocus && voiceFocus.isSupported()) {
+                    const device = await voiceFocus.createTransformDevice(deviceId);
+                    if (device) {
+                        await meetingSession.audioVideo.startAudioInput(device);
+                        console.log('[OK] Voice Focus noise suppression on');
+                        return;
+                    }
+                }
+                console.warn('Voice Focus not supported here; using the raw mic');
+            } catch (error) {
+                console.warn('Voice Focus failed; using the raw mic:', error);
+            }
+            await meetingSession.audioVideo.startAudioInput(deviceId);
+        }
+
         async function initializeChimeSession(connectionData) {
             try {
                 if (!window.ChimeSDK) {
@@ -1003,7 +1030,8 @@
 
                 const ChimeSDK = window.ChimeSDK;
                 const logger = new ChimeSDK.ConsoleLogger('ChimeSDK', ChimeSDK.LogLevel.WARN);
-                const deviceController = new ChimeSDK.DefaultDeviceController(logger);
+                // Web Audio on: Voice Focus runs as a Web Audio node, and the SDK rejects it otherwise.
+                const deviceController = new ChimeSDK.DefaultDeviceController(logger, { enableWebAudio: true });
 
                 const configuration = new ChimeSDK.MeetingSessionConfiguration(
                     connectionData.Meeting,
@@ -1019,7 +1047,7 @@
                 // Chime SDK will request microphone permission here - audio only
                 const audioInputDevices = await meetingSession.audioVideo.listAudioInputDevices();
                 if (audioInputDevices && audioInputDevices.length > 0) {
-                    await meetingSession.audioVideo.startAudioInput(audioInputDevices[0].deviceId);
+                    await startMicrophone(audioInputDevices[0].deviceId, logger);
                 }
 
                 const audioElement = document.getElementById('remoteAudio');
